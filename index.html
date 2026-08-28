@@ -71,6 +71,10 @@
     </div>
 
     <div class="header-actions">
+      <button class="btn" id="openCheatSheetBtn" title="Amadeus Commands Cheat Sheet">
+        <span>💡 Amadeus</span>
+      </button>
+
       <button class="btn" id="openQaModalBtn" title="Scorecard Pre-Close QA Checklist">
         <span>🛡️ Pre-Close QA</span>
         <span class="kbd-badge">8 Steps</span>
@@ -267,6 +271,57 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" id="saveSopJsonBtn">Save & Apply Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Amadeus Cheat Sheet Modal -->
+  <div class="modal-overlay" id="cheatSheetModal">
+    <div class="modal-card" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3 class="modal-title">💡 Amadeus Commands Cheat Sheet</h3>
+        <button class="modal-close-btn" id="cheatSheetModalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">Nhấp vào lệnh để copy nhanh vào Clipboard.</p>
+        <div class="qa-checklist-group" style="display: flex; flex-direction: column; gap: 8px;">
+          <div class="command-row" style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-secondary); border-radius: 4px; border: 1px solid var(--border-color);">
+            <span style="font-size: 0.85rem;">Kiểm tra trạng thái coupon (Đảm bảo là O)</span>
+            <code style="cursor: pointer; color: var(--accent-emerald); font-weight: bold;" onclick="navigator.clipboard.writeText('RTTN'); appInstance.showToast('Copied RTTN')">RTTN</code>
+          </div>
+          <div class="command-row" style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-secondary); border-radius: 4px; border: 1px solid var(--border-color);">
+            <span style="font-size: 0.85rem;">Hiển thị ticket theo line</span>
+            <code style="cursor: pointer; color: var(--accent-emerald); font-weight: bold;" onclick="navigator.clipboard.writeText('TWD/L7'); appInstance.showToast('Copied TWD/L7')">TWD/L7</code>
+          </div>
+          <div class="command-row" style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-secondary); border-radius: 4px; border: 1px solid var(--border-color);">
+            <span style="font-size: 0.85rem;">Tìm chuyến bay</span>
+            <code style="cursor: pointer; color: var(--accent-emerald); font-weight: bold;" onclick="navigator.clipboard.writeText('SN[ngày][chặng]/A[hãng]'); appInstance.showToast('Copied SN...')">SN[ngày][chặng]/A[hãng]</code>
+          </div>
+          <div class="command-row" style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-secondary); border-radius: 4px; border: 1px solid var(--border-color);">
+            <span style="font-size: 0.85rem;">Book chặng</span>
+            <code style="cursor: pointer; color: var(--accent-emerald); font-weight: bold;" onclick="navigator.clipboard.writeText('SS[số khách][hạng vé][dòng]'); appInstance.showToast('Copied SS...')">SS[số khách][hạng vé][dòng]</code>
+          </div>
+          <div class="command-row" style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-secondary); border-radius: 4px; border: 1px solid var(--border-color);">
+            <span style="font-size: 0.85rem;">Tính giá theo hạng vé đã chọn (FXQ)</span>
+            <code style="cursor: pointer; color: var(--accent-emerald); font-weight: bold;" onclick="navigator.clipboard.writeText('FXQ/S[dòng]/R,UP'); appInstance.showToast('Copied FXQ...')">FXQ/S[dòng]/R,UP</code>
+          </div>
+          <div class="command-row" style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-secondary); border-radius: 4px; border: 1px solid var(--border-color);">
+            <span style="font-size: 0.85rem;">Rebook vào hạng vé rẻ nhất hiện có (FXO)</span>
+            <code style="cursor: pointer; color: var(--accent-emerald); font-weight: bold;" onclick="navigator.clipboard.writeText('FXO/S[dòng]/R,UP'); appInstance.showToast('Copied FXO...')">FXO/S[dòng]/R,UP</code>
+          </div>
+          <div class="command-row" style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-secondary); border-radius: 4px; border: 1px solid var(--border-color);">
+            <span style="font-size: 0.85rem;">Xóa giá cũ (Sửa lỗi segment overlap)</span>
+            <code style="cursor: pointer; color: var(--accent-emerald); font-weight: bold;" onclick="navigator.clipboard.writeText('TTE/ALL'); appInstance.showToast('Copied TTE/ALL')">TTE/ALL</code>
+          </div>
+          <div class="command-row" style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-secondary); border-radius: 4px; border: 1px solid var(--border-color);">
+            <span style="font-size: 0.85rem;">Xóa chặng bay cũ</span>
+            <code style="cursor: pointer; color: var(--accent-emerald); font-weight: bold;" onclick="navigator.clipboard.writeText('XE[dòng]'); appInstance.showToast('Copied XE...')">XE[dòng]</code>
+          </div>
+          <div class="command-row" style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-secondary); border-radius: 4px; border: 1px solid var(--border-color);">
+            <span style="font-size: 0.85rem;">Lưu PNR và gửi sang Ticketing</span>
+            <code style="cursor: pointer; color: var(--accent-emerald); font-weight: bold;" onclick="navigator.clipboard.writeText('ER'); appInstance.showToast('Copied ER')">ER</code>
+          </div>
+        </div>
       </div>
     </div>
   </div>

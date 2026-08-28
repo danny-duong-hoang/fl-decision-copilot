@@ -44,7 +44,7 @@ class App {
 
     this.decisionMatrix = new DecisionMatrix(this.dataStore, this.snippetEngine);
     this.cepStepper = new CepStepper(this.snippetEngine);
-    this.sopManager = new SopManager(
+    this.sopManager = new Sop (
       this.dataStore,
       this.snippetEngine,
       this.decisionMatrix,
@@ -83,6 +83,16 @@ class App {
   }
 
   private bindGlobalEvents(): void {
+    const csBtn = document.getElementById('openCheatSheetBtn');
+    const csModal = document.getElementById('cheatSheetModal');
+    const csClose = document.getElementById('cheatSheetModalClose');
+    if (csBtn && csModal) {
+      csBtn.addEventListener('click', () => csModal.classList.add('active'));
+    }
+    if (csClose && csModal) {
+      csClose.addEventListener('click', () => csModal.classList.remove('active'));
+    }
+
     if (this.quickCopyBtn) {
       this.quickCopyBtn.addEventListener('click', () => {
         const text = this.bufferText ? this.bufferText.textContent : '';
