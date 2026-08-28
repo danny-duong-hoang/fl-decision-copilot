@@ -5,15 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FL Decision Copilot — V1 Chat & CXL</title>
   <meta name="description" content="Personal copilot for First Line agents handling flight cancellations, rebooking, ancillaries, and name changes.">
-  
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
-  <!-- Login Screen Overlay -->
   <div class="login-overlay" id="loginOverlay">
     <div class="login-card">
       <div class="login-header">
@@ -21,9 +18,7 @@
         <h2 class="login-title">FL Decision Copilot</h2>
         <p class="login-subtitle">Concentrix / ETG — First Line Authority Assistant</p>
       </div>
-
       <div class="login-alert-error" id="loginErrorMsg" style="display: none;"></div>
-
       <form id="loginForm" class="login-form">
         <div class="form-group">
           <label for="loginUsername">Username</label>
@@ -32,7 +27,6 @@
             <input type="text" id="loginUsername" placeholder="Enter username" required autocomplete="username" />
           </div>
         </div>
-
         <div class="form-group">
           <label for="loginPassword">Password</label>
           <div class="input-with-icon">
@@ -40,27 +34,23 @@
             <input type="password" id="loginPassword" placeholder="Enter password" required autocomplete="current-password" />
           </div>
         </div>
-
         <div class="form-row-remember">
           <label class="remember-label">
             <input type="checkbox" id="loginRemember" checked />
             <span>Remember session on this device</span>
           </label>
         </div>
-
         <button type="submit" class="btn btn-primary btn-login">
           <span>Sign In to Copilot</span>
           <span>→</span>
         </button>
       </form>
-
       <div class="login-footer">
         <span>🔐 Private Client-Side Offline Session (Zero PII Storage)</span>
       </div>
     </div>
   </div>
 
-  <!-- App Header -->
   <header class="app-header">
     <div class="brand-section">
       <div class="brand-icon">🧭</div>
@@ -69,303 +59,227 @@
       </div>
       <span class="brand-badge">V1 Chat + CXL</span>
     </div>
-
     <div class="header-actions">
       <button class="btn" id="openCheatSheetBtn" title="Amadeus Commands Cheat Sheet">
         <span>💡 Amadeus</span>
       </button>
-
       <button class="btn" id="openQaModalBtn" title="Scorecard Pre-Close QA Checklist">
         <span>🛡️ Pre-Close QA</span>
         <span class="kbd-badge">8 Steps</span>
       </button>
-
       <button class="btn" id="openSopManagerBtn" title="Manage Rules & Snippets JSON">
         <span>⚙️ SOP & JSON Data</span>
       </button>
-
       <button class="btn btn-danger" id="logoutBtn" title="Log Out of Copilot">
         <span>🚪 Log Out</span>
       </button>
     </div>
   </header>
 
-  <!-- CEP Stepper Bar -->
   <div class="cep-stepper-bar">
-    <nav class="stepper-container" id="stepperContainer" aria-label="CEP Steps">
-      <!-- Injected by cepStepper.ts -->
-    </nav>
+    <nav class="stepper-container" id="stepperContainer" aria-label="CEP Steps"></nav>
   </div>
 
-  <!-- Main 3-Column Workspace Layout -->
+  <!-- Exactly 3 grid children: left stack | matrix | action card -->
   <main class="main-layout">
 
-    <!-- Column 1: Snippet Engine (Unikey Improved with Fuse.js) -->
-  <section class="panel context-panel" aria-label="Booking Context" style="margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-    <div class="panel-header" style="background: var(--bg-secondary); padding: 12px 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-      <h2 class="panel-title" style="margin: 0; font-size: 1rem;">
-        <span class="icon">📇</span> Booking Context (Auto-fill)
-      </h2>
-      <button class="btn btn-sm" onclick="document.getElementById('contextForm').reset(); updateContext()">Clear</button>
-    </div>
-    <div class="panel-body" style="padding: 16px;">
-      <form id="contextForm" oninput="updateContext()" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-        <div class="form-group" style="grid-column: span 2;">
-          <label style="font-weight: 600; margin-bottom: 4px; display: block;">Brand / Đối tác</label>
-          <select id="ctxBrand" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary);">
-            <option value="ETG">ETG (Gotogate, Mytrip, etc.)</option>
-            <option value="BCOM">Booking.com (NO Fee, NO Penalty)</option>
-          </select>
+    <div class="left-column">
+      <section class="panel context-panel" aria-label="Booking Context">
+        <div class="panel-header">
+          <h2 class="panel-title"><span class="icon">📇</span> Booking Context</h2>
+          <button type="button" class="btn btn-sm" id="clearContextBtn">Clear</button>
         </div>
-        <div class="form-group">
-          <label style="font-weight: 600; margin-bottom: 4px; display: block;">PNR</label>
-          <input type="text" id="ctxPnr" placeholder="e.g. ABCDEF" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); text-transform: uppercase;" />
+        <div class="panel-body context-body">
+          <form id="contextForm" class="context-form" oninput="updateContext()" onsubmit="return false;">
+            <div class="form-group full-width">
+              <label for="ctxBrand">Brand / Đối tác</label>
+              <select id="ctxBrand">
+                <option value="ETG">ETG (Gotogate, Mytrip…)</option>
+                <option value="BCOM">Booking.com (NO Fee / NO Penalty)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="ctxPnr">PNR</label>
+              <input type="text" id="ctxPnr" placeholder="ABCDEF" maxlength="8" autocomplete="off" />
+            </div>
+            <div class="form-group">
+              <label for="ctxAirline">Airline</label>
+              <input type="text" id="ctxAirline" placeholder="VN" maxlength="2" autocomplete="off" />
+            </div>
+            <div class="form-group">
+              <label for="ctxPaxCount">ADT count</label>
+              <input type="number" id="ctxPaxCount" placeholder="1" min="1" max="9" />
+            </div>
+            <div class="form-group">
+              <label for="ctxLastName">Last name</label>
+              <input type="text" id="ctxLastName" placeholder="NGUYEN" autocomplete="off" />
+            </div>
+            <div class="context-toggles full-width">
+              <label class="toggle-chip"><input type="checkbox" id="ctxHasChild" /> Child</label>
+              <label class="toggle-chip"><input type="checkbox" id="ctxHasInfant" /> Infant</label>
+              <label class="toggle-chip warn"><input type="checkbox" id="ctxPartialPax" /> Partial / Split</label>
+            </div>
+            <p class="context-hint full-width">Partial pax = split PNR first. Never quote exact refund amount — only eligibility + fees when ATC works.</p>
+          </form>
         </div>
-        <div class="form-group">
-          <label style="font-weight: 600; margin-bottom: 4px; display: block;">Airline Code</label>
-          <input type="text" id="ctxAirline" placeholder="e.g. VN" maxlength="2" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); text-transform: uppercase;" />
-        </div>
-        <div class="form-group">
-          <label style="font-weight: 600; margin-bottom: 4px; display: block;">Pax Count (ADT)</label>
-          <input type="number" id="ctxPaxCount" placeholder="e.g. 1" min="1" max="9" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary);" />
-        </div>
-        <div class="form-group">
-          <label style="font-weight: 600; margin-bottom: 4px; display: block;">Last Name</label>
-          <input type="text" id="ctxLastName" placeholder="e.g. NGUYEN" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); text-transform: uppercase;" />
-        </div>
-        
-        <div class="form-group" style="grid-column: span 2; display: flex; gap: 16px; align-items: center; margin-top: 8px; padding-top: 12px; border-top: 1px dashed var(--border-color);">
-          <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer;">
-            <input type="checkbox" id="ctxHasChild" /> Child (CHD)
-          </label>
-          <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer;">
-            <input type="checkbox" id="ctxHasInfant" /> Infant (INF)
-          </label>
-          <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer; color: var(--accent-orange);">
-            <input type="checkbox" id="ctxPartialPax" /> Partial Pax (Split)
-          </label>
-        </div>
-      </form>
-    </div>
-  </section>
+      </section>
 
-    <section class="panel snippet-panel" aria-label="Snippet Search Engine">
-      <div class="panel-header">
-        <h2 class="panel-title">
-          <span class="icon">⚡</span> Snippet Engine
-        </h2>
-        <span class="kbd-badge">Press / to search</span>
-      </div>
-
-      <div class="panel-body">
-        <!-- Search Input -->
-        <div class="snippet-search-box">
-          <div class="search-input-wrapper">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="snippetSearchInput" placeholder="Type @trigger or keyword (e.g. @ack, cxl)..." autocomplete="off" />
-            <span class="search-shortcut kbd-badge">/</span>
+      <section class="panel snippet-panel" aria-label="Snippet Search Engine">
+        <div class="panel-header">
+          <h2 class="panel-title"><span class="icon">⚡</span> Snippet Engine</h2>
+          <span class="kbd-badge">/</span>
+        </div>
+        <div class="panel-body">
+          <div class="snippet-search-box">
+            <div class="search-input-wrapper">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="snippetSearchInput" placeholder="@ack, cxl, rebook…" autocomplete="off" />
+              <span class="search-shortcut kbd-badge">/</span>
+            </div>
           </div>
+          <div class="filter-tabs" id="snippetFilterTabs"></div>
+          <div class="snippet-suggestions-popup" id="snippetSuggestionsList"></div>
         </div>
+      </section>
+    </div>
 
-        <!-- Filter Tabs -->
-        <div class="filter-tabs" id="snippetFilterTabs">
-          <!-- Injected by snippetEngine.ts -->
-        </div>
-
-        <!-- Suggestions List -->
-        <div class="snippet-suggestions-popup" id="snippetSuggestionsList">
-          <!-- Injected by snippetEngine.ts -->
-        </div>
-      </div>
-    </section>
-
-    <!-- Column 2: Progressive Decision Matrix -->
     <section class="panel matrix-panel" aria-label="Progressive Decision Matrix">
       <div class="panel-header">
-        <h2 class="panel-title">
-          <span class="icon">🔀</span> Decision Matrix
-        </h2>
-        <div style="display: flex; gap: 6px; align-items: center;">
-          <button class="btn btn-sm" id="resetMatrixBtn" title="Reset all fields">Reset</button>
-          <span class="kbd-badge">Press M</span>
+        <h2 class="panel-title"><span class="icon">🔀</span> Decision Matrix</h2>
+        <div class="panel-header-actions">
+          <button type="button" class="btn btn-sm" id="resetMatrixBtn">Reset</button>
+          <span class="kbd-badge">M</span>
         </div>
       </div>
-
       <div class="panel-body">
-        <div id="matrixStatusContainer" class="matrix-status-indicator">
-          <!-- Status message -->
-        </div>
-
-        <form id="matrixFormContainer" onsubmit="return false;">
-          <!-- Injected progressively by decisionMatrix.ts -->
-        </form>
+        <div id="matrixStatusContainer" class="matrix-status-indicator"></div>
+        <form id="matrixFormContainer" onsubmit="return false;"></form>
       </div>
     </section>
 
-    <!-- Column 3: Action Card (FL Authority Output) -->
     <section class="panel action-card-column" aria-label="First Line Action Card">
       <div class="panel-header">
-        <h2 class="panel-title">
-          <span class="icon">📋</span> First Line Action Card
-        </h2>
-        <span class="kbd-badge">Authority Scope</span>
+        <h2 class="panel-title"><span class="icon">📋</span> First Line Action Card</h2>
+        <span class="kbd-badge">Authority</span>
       </div>
-
-      <div class="panel-body" id="actionCardContainer">
-        <!-- Injected by decisionMatrix.ts -->
-      </div>
+      <div class="panel-body" id="actionCardContainer"></div>
     </section>
 
   </main>
 
-  <!-- Bottom Fixed Buffer Bar -->
   <footer class="bottom-status-bar">
     <div class="buffer-preview">
       <span class="buffer-label">Active Buffer:</span>
       <span class="buffer-text" id="currentBufferText">No snippet copied yet</span>
     </div>
-    <div style="display: flex; gap: 8px;">
-      <button class="btn btn-sm btn-primary" id="quickCopyBufferBtn">
-        <span>📋 Copy Again</span>
-      </button>
-    </div>
+    <button type="button" class="btn btn-sm btn-primary" id="quickCopyBufferBtn"><span>📋 Copy Again</span></button>
   </footer>
 
-  <!-- Variable Substitution Modal -->
   <div class="modal-overlay" id="variableModal">
     <div class="modal-card">
       <div class="modal-header">
         <h3 class="modal-title" id="varModalTitle">Fill Variables</h3>
-        <button class="modal-close-btn" id="varModalClose">&times;</button>
+        <button type="button" class="modal-close-btn" id="varModalClose">&times;</button>
       </div>
       <form id="varModalForm">
         <div class="modal-body">
-          <div style="font-size: 0.8rem; color: var(--text-secondary);">
-            Customize dynamic values before copying to chat clipboard:
-          </div>
-          <div id="varInputsContainer" style="display: flex; flex-direction: column; gap: 12px;">
-            <!-- Injected by snippetEngine.ts -->
-          </div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary);">Customize values before copy:</div>
+          <div id="varInputsContainer" style="display: flex; flex-direction: column; gap: 12px;"></div>
           <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
-            <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Live Paste Preview:</label>
+            <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Live Preview:</label>
             <div class="template-preview-box" id="varPreviewText"></div>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn" id="varCancelBtn">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="varSubmitBtn">
-            <span>📋 Copy to Clipboard</span>
-          </button>
+          <button type="submit" class="btn btn-primary" id="varSubmitBtn"><span>📋 Copy</span></button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Pre-Close QA Scorecard Modal -->
   <div class="modal-overlay" id="qaModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3 class="modal-title">🛡️ CEP Pre-Close QA Checklist</h3>
-        <button class="modal-close-btn" id="qaModalClose">&times;</button>
+        <h3 class="modal-title">🛡️ CEP Pre-Close QA</h3>
+        <button type="button" class="modal-close-btn" id="qaModalClose">&times;</button>
       </div>
       <div class="modal-body">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Scorecard Readiness:</span>
-          <span id="qaProgressText" style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-emerald);">0/8 Checked (0%)</span>
+          <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Scorecard:</span>
+          <span id="qaProgressText" style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-emerald);">0/8</span>
         </div>
-        <div class="qa-progress-bar">
-          <div class="qa-progress-fill" id="qaProgressFill"></div>
-        </div>
-
-        <div class="qa-checklist-group" id="qaListContainer" style="margin-top: 12px;">
-          <!-- Injected by cepStepper.ts -->
-        </div>
+        <div class="qa-progress-bar"><div class="qa-progress-fill" id="qaProgressFill"></div></div>
+        <div class="qa-checklist-group" id="qaListContainer" style="margin-top: 12px;"></div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-danger" id="qaResetBtn">Reset Checklist</button>
+        <button type="button" class="btn btn-danger" id="qaResetBtn">Reset</button>
         <button type="button" class="btn btn-primary" id="qaDoneBtn">Done</button>
       </div>
     </div>
   </div>
 
-  <!-- SOP & Rule Pack Manager Modal -->
   <div class="modal-overlay" id="sopManagerModal">
     <div class="modal-card" style="max-width: 800px; height: 80vh;">
       <div class="modal-header">
-        <h3 class="modal-title">⚙️ SOP Content & Rule Pack Manager</h3>
-        <button class="modal-close-btn" id="sopModalClose">&times;</button>
+        <h3 class="modal-title">⚙️ SOP & Rule Pack</h3>
+        <button type="button" class="modal-close-btn" id="sopModalClose">&times;</button>
       </div>
       <div class="modal-body">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <div class="filter-tabs">
-            <button class="filter-tab active" id="sopTabPaths">Paths (Decision Matrix)</button>
-            <button class="filter-tab" id="sopTabSnippets">Snippets (Chat Scripts)</button>
+            <button type="button" class="filter-tab active" id="sopTabPaths">Paths</button>
+            <button type="button" class="filter-tab" id="sopTabSnippets">Snippets</button>
           </div>
-          <span style="font-size: 0.75rem; color: var(--text-muted);">Stored in memory & local storage</span>
         </div>
-
         <textarea id="sopJsonEditor" style="width: 100%; height: 320px; background: var(--bg-primary); color: #38bdf8; font-family: var(--font-mono); font-size: 0.8rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px; resize: none;"></textarea>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+        <div style="display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
           <div style="display: flex; gap: 8px;">
-            <button class="btn btn-sm" id="exportSopBtn">📥 Export JSON</button>
-            <label class="btn btn-sm" style="cursor: pointer;">
-              📤 Import JSON
+            <button type="button" class="btn btn-sm" id="exportSopBtn">📥 Export</button>
+            <label class="btn btn-sm" style="cursor: pointer;">📤 Import
               <input type="file" id="importSopFileInput" accept=".json" style="display: none;" />
             </label>
           </div>
-          <button class="btn btn-sm btn-danger" id="resetSopDefaultsBtn">↺ Reset to Notion Seed</button>
+          <button type="button" class="btn btn-sm btn-danger" id="resetSopDefaultsBtn">↺ Reset defaults</button>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" id="saveSopJsonBtn">Save & Apply Changes</button>
+        <button type="button" class="btn btn-primary" id="saveSopJsonBtn">Save & Apply</button>
       </div>
     </div>
   </div>
 
-  <!-- Amadeus Cheat Sheet Modal -->
   <div class="modal-overlay" id="cheatSheetModal">
     <div class="modal-card" style="max-width: 800px; height: 80vh;">
       <div class="modal-header">
-        <h3 class="modal-title">💡 Amadeus Dynamic Cheat Sheet & Workflow</h3>
-        <button class="modal-close-btn" id="cheatSheetModalClose">&times;</button>
+        <h3 class="modal-title">💡 Amadeus — Commands & Workflow</h3>
+        <button type="button" class="modal-close-btn" id="cheatSheetModalClose">&times;</button>
       </div>
       <div class="modal-body" style="overflow-y: auto;">
-        
         <div class="filter-tabs" style="margin-bottom: 12px;">
-          <button class="filter-tab active" id="tabCommands" onclick="switchAmadeusTab('commands')">Auto-fill Commands</button>
-          <button class="filter-tab" id="tabWorkflow" onclick="switchAmadeusTab('workflow')">Rebooking Workflow Checklist</button>
+          <button type="button" class="filter-tab active" id="tabCommands" onclick="switchAmadeusTab('commands')">Auto-fill commands</button>
+          <button type="button" class="filter-tab" id="tabWorkflow" onclick="switchAmadeusTab('workflow')">Rebook checklist</button>
         </div>
-
         <div id="amadeusCommandsContent">
-          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">Nhập PNR và thông tin ở bảng Context để lệnh tự động điền. Nhấp vào lệnh để copy nhanh.</p>
-          <div class="qa-checklist-group" id="dynamicCommandsList" style="display: flex; flex-direction: column; gap: 8px;">
-            <!-- Rendered by JS -->
-          </div>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">Fill Booking Context first — click a command to copy.</p>
+          <div class="qa-checklist-group" id="dynamicCommandsList" style="display: flex; flex-direction: column; gap: 8px;"></div>
         </div>
-
         <div id="amadeusWorkflowContent" style="display: none;">
-          <h4 style="margin-top:0;">📋 Các bước Rebook (Rebooking Checklist)</h4>
-          <ol style="font-size: 0.9rem; line-height: 1.5; color: var(--text-primary); padding-left: 1rem;">
-            <li><strong>Mở PNR:</strong> Gõ <code id="wf_rt">RT</code>. Check tình trạng vé.</li>
-            <li><strong>Kiểm tra Coupon:</strong> Gõ <code id="wf_twd">TWD/L7</code> hoặc <code>TWD/TKT...</code> (phải là O - Open).</li>
-            <li><strong>Tính giá:</strong> Tìm chuyến bay mới (<code>SN...</code>), Book chỗ (<code>SS...</code>), rồi tính giá <code id="wf_fxq">FXQ/S[dòng]/R,UP</code>.</li>
-            <li><strong>Kiểm tra Fee:</strong> Đọc dòng <strong>TOTAL ADD COLL</strong>.<br/><span style="color: var(--accent-emerald);">💡 Lưu ý:</span> Nếu Brand là <strong>Booking.com</strong> -> KHÔNG thu service fee, KHÔNG thu airline penalty. Nếu khách có Flex Ticket -> Trừ penalty.</li>
-            <li><strong>Thanh toán:</strong> Tạo Payment Link gửi cho khách. Chờ thanh toán.</li>
-            <li><strong>Dọn dẹp & Lưu:</strong> Xoá chặng cũ (<code>XE[dòng]</code>), Lưu vé <code>ER</code>.</li>
-            <li><strong>Chuyển SL:</strong> Assign ticket sang Fulfillment queue.</li>
+          <h4 style="margin-top:0;">📋 Rebooking checklist</h4>
+          <ol style="font-size: 0.9rem; line-height: 1.55; color: var(--text-primary); padding-left: 1.2rem;">
+            <li><strong>Open PNR:</strong> <code id="wf_rt">RT</code></li>
+            <li><strong>Coupon status:</strong> <code>TWD/L…</code> must be <strong>O</strong> (or A). If partial pax → <strong>split first</strong>.</li>
+            <li><strong>ATC first:</strong> <code>FXQ</code> then <code>FXO</code> if needed. If ATC fails → manual fare rules only; do not invent a refund total.</li>
+            <li><strong>Fees:</strong> Read TOTAL ADD COLL. <span style="color: var(--accent-emerald);">B.com = no ETG fee / no airline penalty quote path.</span> Flex ticket → deduct change fee manually.</li>
+            <li><strong>Never guarantee exact refund amount</strong> — only fees known + “may be eligible”.</li>
+            <li><strong>Pay link →</strong> clean PNR (<code>XE</code>) → <code>ER</code> → Fulfillment.</li>
           </ol>
         </div>
-
       </div>
     </div>
   </div>
 
-
-  <!-- Floating Toast Notifications -->
   <div class="toast-container" id="toastContainer"></div>
-
-  <!-- Vite TypeScript Entry Point -->
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

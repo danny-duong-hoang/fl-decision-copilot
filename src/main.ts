@@ -6,6 +6,25 @@ import { CepStepper } from './cepStepper';
 import { SopManager } from './sopManager';
 import { AuthManager } from './auth';
 
+declare global {
+  interface Window {
+    ctxData: {
+      brand: string;
+      pnr: string;
+      airline: string;
+      pax: string;
+      lastName: string;
+      hasChild: boolean;
+      hasInfant: boolean;
+      partialPax: boolean;
+    };
+    updateContext: () => void;
+    switchAmadeusTab: (tab: 'commands' | 'workflow') => void;
+    renderDynamicCommands: () => void;
+    appInstance: App;
+  }
+}
+
 class App {
   private dataStore: DataStore;
   private snippetEngine!: SnippetEngine;
@@ -17,7 +36,7 @@ class App {
   private toastContainer!: HTMLElement;
   private bufferText!: HTMLElement;
   private quickCopyBtn!: HTMLButtonElement;
-  private isInitialized: boolean = false;
+  private isInitialized = false;
 
   constructor() {
     this.dataStore = new DataStore();
@@ -27,10 +46,7 @@ class App {
   }
 
   public init(): void {
-    this.authManager = new AuthManager(() => {
-      this.bootstrapWorkspace();
-    });
-
+    this.authManager = new AuthManager(() => this.bootstrapWorkspace());
     this.authManager.init();
     this.bindGlobalEvents();
   }
@@ -41,7 +57,6 @@ class App {
     this.snippetEngine = new SnippetEngine(this.dataStore, (text, title) => {
       this.handleSnippetCopied(text, title);
     });
-
     this.decisionMatrix = new DecisionMatrix(this.dataStore, this.snippetEngine);
     this.cepStepper = new CepStepper(this.snippetEngine);
     this.sopManager = new SopManager(
@@ -54,30 +69,25 @@ class App {
     this.snippetEngine.init();
     this.decisionMatrix.init();
     this.cepStepper.init();
-
     this.isInitialized = true;
+
+    window.renderDynamicCommands();
   }
 
   private handleSnippetCopied(text: string, title: string): void {
-    if (this.bufferText) {
-      this.bufferText.textContent = text;
-    }
+    if (this.bufferText) this.bufferText.textContent = text;
     this.showToast(`Copied "${title || 'Text'}" to clipboard!`);
   }
 
   public showToast(message: string): void {
     if (!this.toastContainer) return;
-
     const toast = document.createElement('div');
     toast.className = 'toast';
     toast.innerHTML = `<span>✓</span><span>${this.escapeHtml(message)}</span>`;
-
     this.toastContainer.appendChild(toast);
-
     setTimeout(() => {
       toast.style.opacity = '0';
-      toast.style.transform = 'translateY(-10px)';
-      toast.style.transition = 'all 0.2s ease';
+      toast.style.transition = 'opacity 0.2s ease';
       setTimeout(() => toast.remove(), 200);
     }, 2500);
   }
@@ -87,15 +97,27 @@ class App {
     const csModal = document.getElementById('cheatSheetModal');
     const csClose = document.getElementById('cheatSheetModalClose');
     if (csBtn && csModal) {
-      csBtn.addEventListener('click', () => csModal.classList.add('active'));
+      csBtn.addEventListener('click', () => {
+        window.renderDynamicCommands();
+        csModal.classList.add('active');
+      });
     }
     if (csClose && csModal) {
       csClose.addEventListener('click', () => csModal.classList.remove('active'));
     }
 
+    const clearBtn = document.getElementById('clearContextBtn');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        const form = document.getElementById('contextForm') as HTMLFormElement | null;
+        form?.reset();
+        window.updateContext();
+      });
+    }
+
     if (this.quickCopyBtn) {
       this.quickCopyBtn.addEventListener('click', () => {
-        const text = this.bufferText ? this.bufferText.textContent : '';
+        const text = this.bufferText?.textContent || '';
         if (text && text !== 'No snippet copied yet') {
           navigator.clipboard.writeText(text);
           this.showToast('Copied active buffer to clipboard!');
@@ -104,23 +126,18 @@ class App {
     }
 
     document.addEventListener('keydown', (e: KeyboardEvent) => {
-      const targetTag = (e.target as HTMLElement).tagName.toLowerCase();
-      const isInput = targetTag === 'input' || targetTag === 'textarea' || targetTag === 'select';
-
+      const tag = (e.target as HTMLElement).tagName.toLowerCase();
+      const isInput = tag === 'input' || tag === 'textarea' || tag === 'select';
       if (e.key === '/' && !isInput) {
         e.preventDefault();
-        const search = document.getElementById('snippetSearchInput') as HTMLInputElement;
-        if (search) {
-          search.focus();
-          search.select();
-        }
+        const search = document.getElementById('snippetSearchInput') as HTMLInputElement | null;
+        search?.focus();
+        search?.select();
       } else if ((e.key === 'm' || e.key === 'M') && !isInput) {
         e.preventDefault();
-        if (this.decisionMatrix) {
-          this.decisionMatrix.focus();
-        }
+        this.decisionMatrix?.focus();
       } else if (e.key === 'Escape') {
-        document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+        document.querySelectorAll('.modal-overlay.active').forEach((m) => m.classList.remove('active'));
       }
     });
   }
@@ -134,76 +151,95 @@ class App {
       .replace(/"/g, '&quot;');
   }
 }
-window.ctxData = { brand: 'ETG', pnr: '', airline: '', pax: '', lastName: '', hasChild: false, hasInfant: false, partialPax: false };
 
-window.updateContext = function() {
+window.ctxData = {
+  brand: 'ETG',
+  pnr: '',
+  airline: '',
+  pax: '',
+  lastName: '',
+  hasChild: false,
+  hasInfant: false,
+  partialPax: false,
+};
+
+window.updateContext = function () {
+  const val = (id: string) => (document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null)?.value || '';
+  const checked = (id: string) => !!(document.getElementById(id) as HTMLInputElement | null)?.checked;
+
   window.ctxData = {
-    pnr: (document.getElementById('ctxPnr').value || '').toUpperCase(),
-    airline: (document.getElementById('ctxAirline').value || '').toUpperCase(),
-    pax: document.getElementById('ctxPaxCount').value || '[số khách]',
-    lastName: (document.getElementById('ctxLastName').value || '').toUpperCase(),
-    brand: document.getElementById('ctxBrand') ? document.getElementById('ctxBrand').value : 'ETG',
-    hasChild: document.getElementById('ctxHasChild') ? document.getElementById('ctxHasChild').checked : false,
-    hasInfant: document.getElementById('ctxHasInfant') ? document.getElementById('ctxHasInfant').checked : false,
-    partialPax: document.getElementById('ctxPartialPax') ? document.getElementById('ctxPartialPax').checked : false
+    brand: val('ctxBrand') || 'ETG',
+    pnr: val('ctxPnr').toUpperCase(),
+    airline: val('ctxAirline').toUpperCase(),
+    pax: val('ctxPaxCount') || '[pax]',
+    lastName: val('ctxLastName').toUpperCase(),
+    hasChild: checked('ctxHasChild'),
+    hasInfant: checked('ctxHasInfant'),
+    partialPax: checked('ctxPartialPax'),
   };
-  renderDynamicCommands();
+  window.renderDynamicCommands();
 };
 
-window.switchAmadeusTab = function(tab) {
-  document.getElementById('tabCommands').classList.toggle('active', tab === 'commands');
-  document.getElementById('tabWorkflow').classList.toggle('active', tab === 'workflow');
-  document.getElementById('amadeusCommandsContent').style.display = tab === 'commands' ? 'block' : 'none';
-  document.getElementById('amadeusWorkflowContent').style.display = tab === 'workflow' ? 'block' : 'none';
+window.switchAmadeusTab = function (tab: 'commands' | 'workflow') {
+  document.getElementById('tabCommands')?.classList.toggle('active', tab === 'commands');
+  document.getElementById('tabWorkflow')?.classList.toggle('active', tab === 'workflow');
+  const cmd = document.getElementById('amadeusCommandsContent');
+  const wf = document.getElementById('amadeusWorkflowContent');
+  if (cmd) cmd.style.display = tab === 'commands' ? 'block' : 'none';
+  if (wf) wf.style.display = tab === 'workflow' ? 'block' : 'none';
 };
 
-window.renderDynamicCommands = function() {
+window.renderDynamicCommands = function () {
   const c = window.ctxData;
   const pnrCmd = c.pnr ? `RT${c.pnr}` : 'RT[PNR]';
-  const nameCmd = c.lastName && c.pax !== '[số khách]' ? `NM${c.pax}${c.lastName}/[TÊN]` : 'NM[số khách][HỌ]/[TÊN]';
-  
-  let commands = [];
+  const airline = c.airline || '[YY]';
+  const pax = c.pax || '[pax]';
+  const last = c.lastName || '[LAST]';
+
+  const commands: Array<{ desc: string; cmd: string }> = [];
+
   if (c.partialPax) {
-    commands.push({ desc: 'Tách PNR (Split Pax) - Amadeus', cmd: `SP[số pax cần tách]` });
-    commands.push({ desc: 'Lưu PNR tách', cmd: `RF${c.lastName || '[TÊN]'};EF` });
+    commands.push({ desc: 'Split pax (Amadeus SP)', cmd: 'SP[line numbers of pax to split]' });
+    commands.push({ desc: 'File split PNR', cmd: `RF${last};EF` });
   }
+
   commands.push(
-  
-    { desc: 'Mở PNR', cmd: pnrCmd },
-    { desc: 'Đổi Tên (NACO)', cmd: `NU1${c.lastName || '[HỌ]'}/[FIRST NAME] MS` },
-    { desc: 'Kiểm tra trạng thái coupon (Đảm bảo là O)', cmd: 'RTTN' },
-    { desc: 'Hiển thị ticket theo line', cmd: 'TWD/L7' },
-    { desc: 'Tìm chuyến bay mới', cmd: `SN[ngày][chặng]/A${c.airline || '[hãng]'}` },
-    { desc: 'Book chặng', cmd: `SS${c.pax}[hạng vé][dòng]` },
-    { desc: 'Tính giá theo hạng vé đã chọn (FXQ)', cmd: 'FXQ/S[dòng]/R,UP' },
-    { desc: 'Rebook vào hạng vé rẻ nhất hiện có (FXO)', cmd: 'FXO/S[dòng]/R,UP' },
-    { desc: 'Xóa giá cũ (Sửa lỗi segment overlap)', cmd: 'TTE/ALL' },
-    { desc: 'Xóa chặng bay cũ', cmd: 'XE[dòng]' },
-    { desc: 'Lưu PNR và gửi sang Ticketing', cmd: 'ER' }
+    { desc: 'Open PNR', cmd: pnrCmd },
+    { desc: 'Name correction (NACO)', cmd: `NU1${last}/[FIRST] MS` },
+    { desc: 'Ticket list / coupon check', cmd: 'RTTN' },
+    { desc: 'Display ticket by line', cmd: 'TWD/L7' },
+    { desc: 'Availability', cmd: `SN[date][citypair]/A${airline}` },
+    { desc: 'Sell segment', cmd: `SS${pax}[class][line]` },
+    { desc: 'ATC quote (FXQ)', cmd: 'FXQ/S[lines]/R,UP' },
+    { desc: 'ATC lowest (FXO)', cmd: 'FXO/S[lines]/R,UP' },
+    { desc: 'Clear stored fares (overlap)', cmd: 'TTE/ALL' },
+    { desc: 'Cancel old segment', cmd: 'XE[line]' },
+    { desc: 'End + retrieve', cmd: 'ER' }
   );
 
-  const html = commands.map(c => `
-    <div class="command-row" style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-secondary); border-radius: 4px; border: 1px solid var(--border-color);">
-      <span style="font-size: 0.85rem;">${c.desc}</span>
-      <code style="cursor: pointer; color: var(--accent-emerald); font-weight: bold;" onclick="navigator.clipboard.writeText('${c.cmd}'); appInstance.showToast('Copied ${c.cmd.replace(/'/g, "\\'")}')">${c.cmd}</code>
-    </div>
-  `).join('');
-  
+  if (c.hasChild) commands.push({ desc: 'Note: CHD on PNR', cmd: `/* CHD present — price CHD correctly */` });
+  if (c.hasInfant) commands.push({ desc: 'Note: INF on PNR', cmd: `/* INF present — SSR INFT / price INF */` });
+  if (c.brand === 'BCOM') {
+    commands.push({ desc: 'B.com rule', cmd: '/* NO ETG service fee · NO airline penalty quote path */' });
+  }
+
   const list = document.getElementById('dynamicCommandsList');
-  if (list) list.innerHTML = html;
+  if (list) {
+    list.innerHTML = commands
+      .map((row) => {
+        const safe = row.cmd.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        return `<div class="command-row"><span style="font-size:0.85rem;">${row.desc}</span><code onclick="navigator.clipboard.writeText('${safe}');window.appInstance&&window.appInstance.showToast('Copied')">${row.cmd}</code></div>`;
+      })
+      .join('');
+  }
 
-  // Update workflow references
   const wfRt = document.getElementById('wf_rt');
-  if(wfRt) wfRt.textContent = pnrCmd;
+  if (wfRt) wfRt.textContent = pnrCmd;
 };
-
-// Initialize render
-setTimeout(() => { if(window.renderDynamicCommands) window.renderDynamicCommands(); }, 500);
-
-
 
 document.addEventListener('DOMContentLoaded', () => {
   const app = new App();
   app.init();
-  (window as any).appInstance = app;
+  window.appInstance = app;
+  window.updateContext();
 });
