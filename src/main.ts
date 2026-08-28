@@ -4,6 +4,7 @@ import { SnippetEngine } from './snippetEngine';
 import { DecisionMatrix } from './decisionMatrix';
 import { CepStepper } from './cepStepper';
 import { SopManager } from './sopManager';
+import { AuthManager } from './auth';
 
 class App {
   private dataStore: DataStore;
@@ -11,10 +12,12 @@ class App {
   private decisionMatrix!: DecisionMatrix;
   private cepStepper!: CepStepper;
   private sopManager!: SopManager;
+  private authManager!: AuthManager;
 
   private toastContainer!: HTMLElement;
   private bufferText!: HTMLElement;
   private quickCopyBtn!: HTMLButtonElement;
+  private isInitialized: boolean = false;
 
   constructor() {
     this.dataStore = new DataStore();
@@ -24,6 +27,17 @@ class App {
   }
 
   public init(): void {
+    this.authManager = new AuthManager(() => {
+      this.bootstrapWorkspace();
+    });
+
+    this.authManager.init();
+    this.bindGlobalEvents();
+  }
+
+  private bootstrapWorkspace(): void {
+    if (this.isInitialized) return;
+
     this.snippetEngine = new SnippetEngine(this.dataStore, (text, title) => {
       this.handleSnippetCopied(text, title);
     });
@@ -41,7 +55,7 @@ class App {
     this.decisionMatrix.init();
     this.cepStepper.init();
 
-    this.bindGlobalEvents();
+    this.isInitialized = true;
   }
 
   private handleSnippetCopied(text: string, title: string): void {

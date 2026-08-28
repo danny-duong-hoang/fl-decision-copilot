@@ -13,6 +13,53 @@
 </head>
 <body>
 
+  <!-- Login Screen Overlay -->
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-icon">🧭</div>
+        <h2 class="login-title">FL Decision Copilot</h2>
+        <p class="login-subtitle">Concentrix / ETG — First Line Authority Assistant</p>
+      </div>
+
+      <div class="login-alert-error" id="loginErrorMsg" style="display: none;"></div>
+
+      <form id="loginForm" class="login-form">
+        <div class="form-group">
+          <label for="loginUsername">Username</label>
+          <div class="input-with-icon">
+            <span class="field-icon">👤</span>
+            <input type="text" id="loginUsername" placeholder="Enter username" required autocomplete="username" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <div class="input-with-icon">
+            <span class="field-icon">🔒</span>
+            <input type="password" id="loginPassword" placeholder="Enter password" required autocomplete="current-password" />
+          </div>
+        </div>
+
+        <div class="form-row-remember">
+          <label class="remember-label">
+            <input type="checkbox" id="loginRemember" checked />
+            <span>Remember session on this device</span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-login">
+          <span>Sign In to Copilot</span>
+          <span>→</span>
+        </button>
+      </form>
+
+      <div class="login-footer">
+        <span>🔐 Private Client-Side Offline Session (Zero PII Storage)</span>
+      </div>
+    </div>
+  </div>
+
   <!-- App Header -->
   <header class="app-header">
     <div class="brand-section">
@@ -31,6 +78,10 @@
 
       <button class="btn" id="openSopManagerBtn" title="Manage Rules & Snippets JSON">
         <span>⚙️ SOP & JSON Data</span>
+      </button>
+
+      <button class="btn btn-danger" id="logoutBtn" title="Log Out of Copilot">
+        <span>🚪 Log Out</span>
       </button>
     </div>
   </header>
