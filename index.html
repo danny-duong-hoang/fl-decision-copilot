@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FL Decision Copilot — V1 Chat & CXL</title>
+  <meta name="description" content="Personal copilot for First Line agents handling flight cancellations, rebooking, ancillaries, and name changes.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="brand-section">
+      <div class="brand-icon">🧭</div>
+      <div>
+        <h1 class="brand-title">FL Decision Copilot</h1>
+      </div>
+      <span class="brand-badge">V1 Chat + CXL</span>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn" id="openQaModalBtn" title="Scorecard Pre-Close QA Checklist">
+        <span>🛡️ Pre-Close QA</span>
+        <span class="kbd-badge">8 Steps</span>
+      </button>
+
+      <button class="btn" id="openSopManagerBtn" title="Manage Rules & Snippets JSON">
+        <span>⚙️ SOP & JSON Data</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- CEP Stepper Bar -->
+  <div class="cep-stepper-bar">
+    <nav class="stepper-container" id="stepperContainer" aria-label="CEP Steps">
+      <!-- Injected by cepStepper.ts -->
+    </nav>
+  </div>
+
+  <!-- Main 3-Column Workspace Layout -->
+  <main class="main-layout">
+
+    <!-- Column 1: Snippet Engine (Unikey Improved with Fuse.js) -->
+    <section class="panel snippet-panel" aria-label="Snippet Search Engine">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <span class="icon">⚡</span> Snippet Engine
+        </h2>
+        <span class="kbd-badge">Press / to search</span>
+      </div>
+
+      <div class="panel-body">
+        <!-- Search Input -->
+        <div class="snippet-search-box">
+          <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="snippetSearchInput" placeholder="Type @trigger or keyword (e.g. @ack, cxl)..." autocomplete="off" />
+            <span class="search-shortcut kbd-badge">/</span>
+          </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs" id="snippetFilterTabs">
+          <!-- Injected by snippetEngine.ts -->
+        </div>
+
+        <!-- Suggestions List -->
+        <div class="snippet-suggestions-popup" id="snippetSuggestionsList">
+          <!-- Injected by snippetEngine.ts -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Column 2: Progressive Decision Matrix -->
+    <section class="panel matrix-panel" aria-label="Progressive Decision Matrix">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <span class="icon">🔀</span> Decision Matrix
+        </h2>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <button class="btn btn-sm" id="resetMatrixBtn" title="Reset all fields">Reset</button>
+          <span class="kbd-badge">Press M</span>
+        </div>
+      </div>
+
+      <div class="panel-body">
+        <div id="matrixStatusContainer" class="matrix-status-indicator">
+          <!-- Status message -->
+        </div>
+
+        <form id="matrixFormContainer" onsubmit="return false;">
+          <!-- Injected progressively by decisionMatrix.ts -->
+        </form>
+      </div>
+    </section>
+
+    <!-- Column 3: Action Card (FL Authority Output) -->
+    <section class="panel action-card-column" aria-label="First Line Action Card">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <span class="icon">📋</span> First Line Action Card
+        </h2>
+        <span class="kbd-badge">Authority Scope</span>
+      </div>
+
+      <div class="panel-body" id="actionCardContainer">
+        <!-- Injected by decisionMatrix.ts -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Fixed Buffer Bar -->
+  <footer class="bottom-status-bar">
+    <div class="buffer-preview">
+      <span class="buffer-label">Active Buffer:</span>
+      <span class="buffer-text" id="currentBufferText">No snippet copied yet</span>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn btn-sm btn-primary" id="quickCopyBufferBtn">
+        <span>📋 Copy Again</span>
+      </button>
+    </div>
+  </footer>
+
+  <!-- Variable Substitution Modal -->
+  <div class="modal-overlay" id="variableModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="varModalTitle">Fill Variables</h3>
+        <button class="modal-close-btn" id="varModalClose">&times;</button>
+      </div>
+      <form id="varModalForm">
+        <div class="modal-body">
+          <div style="font-size: 0.8rem; color: var(--text-secondary);">
+            Customize dynamic values before copying to chat clipboard:
+          </div>
+          <div id="varInputsContainer" style="display: flex; flex-direction: column; gap: 12px;">
+            <!-- Injected by snippetEngine.ts -->
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
+            <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Live Paste Preview:</label>
+            <div class="template-preview-box" id="varPreviewText"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn" id="varCancelBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="varSubmitBtn">
+            <span>📋 Copy to Clipboard</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Pre-Close QA Scorecard Modal -->
+  <div class="modal-overlay" id="qaModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">🛡️ CEP Pre-Close QA Checklist</h3>
+        <button class="modal-close-btn" id="qaModalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Scorecard Readiness:</span>
+          <span id="qaProgressText" style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-emerald);">0/8 Checked (0%)</span>
+        </div>
+        <div class="qa-progress-bar">
+          <div class="qa-progress-fill" id="qaProgressFill"></div>
+        </div>
+
+        <div class="qa-checklist-group" id="qaListContainer" style="margin-top: 12px;">
+          <!-- Injected by cepStepper.ts -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" id="qaResetBtn">Reset Checklist</button>
+        <button type="button" class="btn btn-primary" id="qaDoneBtn">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOP & Rule Pack Manager Modal -->
+  <div class="modal-overlay" id="sopManagerModal">
+    <div class="modal-card" style="max-width: 800px; height: 80vh;">
+      <div class="modal-header">
+        <h3 class="modal-title">⚙️ SOP Content & Rule Pack Manager</h3>
+        <button class="modal-close-btn" id="sopModalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div class="filter-tabs">
+            <button class="filter-tab active" id="sopTabPaths">Paths (Decision Matrix)</button>
+            <button class="filter-tab" id="sopTabSnippets">Snippets (Chat Scripts)</button>
+          </div>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">Stored in memory & local storage</span>
+        </div>
+
+        <textarea id="sopJsonEditor" style="width: 100%; height: 320px; background: var(--bg-primary); color: #38bdf8; font-family: var(--font-mono); font-size: 0.8rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px; resize: none;"></textarea>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-sm" id="exportSopBtn">📥 Export JSON</button>
+            <label class="btn btn-sm" style="cursor: pointer;">
+              📤 Import JSON
+              <input type="file" id="importSopFileInput" accept=".json" style="display: none;" />
+            </label>
+          </div>
+          <button class="btn btn-sm btn-danger" id="resetSopDefaultsBtn">↺ Reset to Notion Seed</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="saveSopJsonBtn">Save & Apply Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Toast Notifications -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Vite TypeScript Entry Point -->
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
