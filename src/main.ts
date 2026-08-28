@@ -134,6 +134,63 @@ class App {
       .replace(/"/g, '&quot;');
   }
 }
+window.ctxData = { pnr: '', airline: '', pax: '', lastName: '' };
+
+window.updateContext = function() {
+  window.ctxData = {
+    pnr: (document.getElementById('ctxPnr').value || '').toUpperCase(),
+    airline: (document.getElementById('ctxAirline').value || '').toUpperCase(),
+    pax: document.getElementById('ctxPaxCount').value || '[số khách]',
+    lastName: (document.getElementById('ctxLastName').value || '').toUpperCase()
+  };
+  renderDynamicCommands();
+};
+
+window.switchAmadeusTab = function(tab) {
+  document.getElementById('tabCommands').classList.toggle('active', tab === 'commands');
+  document.getElementById('tabWorkflow').classList.toggle('active', tab === 'workflow');
+  document.getElementById('amadeusCommandsContent').style.display = tab === 'commands' ? 'block' : 'none';
+  document.getElementById('amadeusWorkflowContent').style.display = tab === 'workflow' ? 'block' : 'none';
+};
+
+window.renderDynamicCommands = function() {
+  const c = window.ctxData;
+  const pnrCmd = c.pnr ? `RT${c.pnr}` : 'RT[PNR]';
+  const nameCmd = c.lastName && c.pax !== '[số khách]' ? `NM${c.pax}${c.lastName}/[TÊN]` : 'NM[số khách][HỌ]/[TÊN]';
+  
+  const commands = [
+    { desc: 'Mở PNR', cmd: pnrCmd },
+    { desc: 'Đổi Tên (NACO)', cmd: `NU1${c.lastName || '[HỌ]'}/[FIRST NAME] MS` },
+    { desc: 'Kiểm tra trạng thái coupon (Đảm bảo là O)', cmd: 'RTTN' },
+    { desc: 'Hiển thị ticket theo line', cmd: 'TWD/L7' },
+    { desc: 'Tìm chuyến bay mới', cmd: `SN[ngày][chặng]/A${c.airline || '[hãng]'}` },
+    { desc: 'Book chặng', cmd: `SS${c.pax}[hạng vé][dòng]` },
+    { desc: 'Tính giá theo hạng vé đã chọn (FXQ)', cmd: 'FXQ/S[dòng]/R,UP' },
+    { desc: 'Rebook vào hạng vé rẻ nhất hiện có (FXO)', cmd: 'FXO/S[dòng]/R,UP' },
+    { desc: 'Xóa giá cũ (Sửa lỗi segment overlap)', cmd: 'TTE/ALL' },
+    { desc: 'Xóa chặng bay cũ', cmd: 'XE[dòng]' },
+    { desc: 'Lưu PNR và gửi sang Ticketing', cmd: 'ER' }
+  ];
+
+  const html = commands.map(c => `
+    <div class="command-row" style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-secondary); border-radius: 4px; border: 1px solid var(--border-color);">
+      <span style="font-size: 0.85rem;">${c.desc}</span>
+      <code style="cursor: pointer; color: var(--accent-emerald); font-weight: bold;" onclick="navigator.clipboard.writeText('${c.cmd}'); appInstance.showToast('Copied ${c.cmd.replace(/'/g, "\\'")}')">${c.cmd}</code>
+    </div>
+  `).join('');
+  
+  const list = document.getElementById('dynamicCommandsList');
+  if (list) list.innerHTML = html;
+
+  // Update workflow references
+  const wfRt = document.getElementById('wf_rt');
+  if(wfRt) wfRt.textContent = pnrCmd;
+};
+
+// Initialize render
+setTimeout(() => { if(window.renderDynamicCommands) window.renderDynamicCommands(); }, 500);
+
+
 
 document.addEventListener('DOMContentLoaded', () => {
   const app = new App();

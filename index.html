@@ -101,6 +101,36 @@
   <main class="main-layout">
 
     <!-- Column 1: Snippet Engine (Unikey Improved with Fuse.js) -->
+<!-- Column 1: Snippet Engine (Unikey Improved with Fuse.js) -->
+  <section class="panel context-panel" aria-label="Booking Context" style="margin-bottom: 12px;">
+    <div class="panel-header">
+      <h2 class="panel-title">
+        <span class="icon">📇</span> Booking Context (Auto-fill)
+      </h2>
+      <button class="btn btn-sm" onclick="document.getElementById('contextForm').reset(); updateContext()">Clear</button>
+    </div>
+    <div class="panel-body">
+      <form id="contextForm" oninput="updateContext()" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <div class="form-group">
+          <label>PNR</label>
+          <input type="text" id="ctxPnr" placeholder="e.g. ABCDEF" />
+        </div>
+        <div class="form-group">
+          <label>Airline Code</label>
+          <input type="text" id="ctxAirline" placeholder="e.g. VN" maxlength="2" style="text-transform: uppercase;" />
+        </div>
+        <div class="form-group">
+          <label>Pax Count</label>
+          <input type="number" id="ctxPaxCount" placeholder="e.g. 1" min="1" max="9" />
+        </div>
+        <div class="form-group">
+          <label>Last Name</label>
+          <input type="text" id="ctxLastName" placeholder="e.g. NGUYEN" />
+        </div>
+      </form>
+    </div>
+  </section>
+
     <section class="panel snippet-panel" aria-label="Snippet Search Engine">
       <div class="panel-header">
         <h2 class="panel-title">
@@ -277,54 +307,42 @@
 
   <!-- Amadeus Cheat Sheet Modal -->
   <div class="modal-overlay" id="cheatSheetModal">
-    <div class="modal-card" style="max-width: 650px;">
+    <div class="modal-card" style="max-width: 800px; height: 80vh;">
       <div class="modal-header">
-        <h3 class="modal-title">💡 Amadeus Commands Cheat Sheet</h3>
+        <h3 class="modal-title">💡 Amadeus Dynamic Cheat Sheet & Workflow</h3>
         <button class="modal-close-btn" id="cheatSheetModalClose">&times;</button>
       </div>
-      <div class="modal-body">
-        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">Nhấp vào lệnh để copy nhanh vào Clipboard.</p>
-        <div class="qa-checklist-group" style="display: flex; flex-direction: column; gap: 8px;">
-          <div class="command-row" style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-secondary); border-radius: 4px; border: 1px solid var(--border-color);">
-            <span style="font-size: 0.85rem;">Kiểm tra trạng thái coupon (Đảm bảo là O)</span>
-            <code style="cursor: pointer; color: var(--accent-emerald); font-weight: bold;" onclick="navigator.clipboard.writeText('RTTN'); appInstance.showToast('Copied RTTN')">RTTN</code>
-          </div>
-          <div class="command-row" style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-secondary); border-radius: 4px; border: 1px solid var(--border-color);">
-            <span style="font-size: 0.85rem;">Hiển thị ticket theo line</span>
-            <code style="cursor: pointer; color: var(--accent-emerald); font-weight: bold;" onclick="navigator.clipboard.writeText('TWD/L7'); appInstance.showToast('Copied TWD/L7')">TWD/L7</code>
-          </div>
-          <div class="command-row" style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-secondary); border-radius: 4px; border: 1px solid var(--border-color);">
-            <span style="font-size: 0.85rem;">Tìm chuyến bay</span>
-            <code style="cursor: pointer; color: var(--accent-emerald); font-weight: bold;" onclick="navigator.clipboard.writeText('SN[ngày][chặng]/A[hãng]'); appInstance.showToast('Copied SN...')">SN[ngày][chặng]/A[hãng]</code>
-          </div>
-          <div class="command-row" style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-secondary); border-radius: 4px; border: 1px solid var(--border-color);">
-            <span style="font-size: 0.85rem;">Book chặng</span>
-            <code style="cursor: pointer; color: var(--accent-emerald); font-weight: bold;" onclick="navigator.clipboard.writeText('SS[số khách][hạng vé][dòng]'); appInstance.showToast('Copied SS...')">SS[số khách][hạng vé][dòng]</code>
-          </div>
-          <div class="command-row" style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-secondary); border-radius: 4px; border: 1px solid var(--border-color);">
-            <span style="font-size: 0.85rem;">Tính giá theo hạng vé đã chọn (FXQ)</span>
-            <code style="cursor: pointer; color: var(--accent-emerald); font-weight: bold;" onclick="navigator.clipboard.writeText('FXQ/S[dòng]/R,UP'); appInstance.showToast('Copied FXQ...')">FXQ/S[dòng]/R,UP</code>
-          </div>
-          <div class="command-row" style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-secondary); border-radius: 4px; border: 1px solid var(--border-color);">
-            <span style="font-size: 0.85rem;">Rebook vào hạng vé rẻ nhất hiện có (FXO)</span>
-            <code style="cursor: pointer; color: var(--accent-emerald); font-weight: bold;" onclick="navigator.clipboard.writeText('FXO/S[dòng]/R,UP'); appInstance.showToast('Copied FXO...')">FXO/S[dòng]/R,UP</code>
-          </div>
-          <div class="command-row" style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-secondary); border-radius: 4px; border: 1px solid var(--border-color);">
-            <span style="font-size: 0.85rem;">Xóa giá cũ (Sửa lỗi segment overlap)</span>
-            <code style="cursor: pointer; color: var(--accent-emerald); font-weight: bold;" onclick="navigator.clipboard.writeText('TTE/ALL'); appInstance.showToast('Copied TTE/ALL')">TTE/ALL</code>
-          </div>
-          <div class="command-row" style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-secondary); border-radius: 4px; border: 1px solid var(--border-color);">
-            <span style="font-size: 0.85rem;">Xóa chặng bay cũ</span>
-            <code style="cursor: pointer; color: var(--accent-emerald); font-weight: bold;" onclick="navigator.clipboard.writeText('XE[dòng]'); appInstance.showToast('Copied XE...')">XE[dòng]</code>
-          </div>
-          <div class="command-row" style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-secondary); border-radius: 4px; border: 1px solid var(--border-color);">
-            <span style="font-size: 0.85rem;">Lưu PNR và gửi sang Ticketing</span>
-            <code style="cursor: pointer; color: var(--accent-emerald); font-weight: bold;" onclick="navigator.clipboard.writeText('ER'); appInstance.showToast('Copied ER')">ER</code>
+      <div class="modal-body" style="overflow-y: auto;">
+        
+        <div class="filter-tabs" style="margin-bottom: 12px;">
+          <button class="filter-tab active" id="tabCommands" onclick="switchAmadeusTab('commands')">Auto-fill Commands</button>
+          <button class="filter-tab" id="tabWorkflow" onclick="switchAmadeusTab('workflow')">Rebooking Workflow Checklist</button>
+        </div>
+
+        <div id="amadeusCommandsContent">
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">Nhập PNR và thông tin ở bảng Context để lệnh tự động điền. Nhấp vào lệnh để copy nhanh.</p>
+          <div class="qa-checklist-group" id="dynamicCommandsList" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Rendered by JS -->
           </div>
         </div>
+
+        <div id="amadeusWorkflowContent" style="display: none;">
+          <h4 style="margin-top:0;">📋 Các bước Rebook (Rebooking Checklist)</h4>
+          <ol style="font-size: 0.9rem; line-height: 1.5; color: var(--text-primary); padding-left: 1rem;">
+            <li><strong>Mở PNR:</strong> Gõ <code id="wf_rt">RT</code>. Check tình trạng vé.</li>
+            <li><strong>Kiểm tra Coupon:</strong> Gõ <code id="wf_twd">TWD/L7</code> hoặc <code>TWD/TKT...</code> (phải là O - Open).</li>
+            <li><strong>Tính giá:</strong> Tìm chuyến bay mới (<code>SN...</code>), Book chỗ (<code>SS...</code>), rồi tính giá <code id="wf_fxq">FXQ/S[dòng]/R,UP</code>.</li>
+            <li><strong>Kiểm tra Fee:</strong> Đọc dòng <strong>TOTAL ADD COLL</strong>. Trừ đi Penalty nếu khách có Flex Ticket.</li>
+            <li><strong>Thanh toán:</strong> Tạo Payment Link gửi cho khách. Chờ thanh toán.</li>
+            <li><strong>Dọn dẹp & Lưu:</strong> Xoá chặng cũ (<code>XE[dòng]</code>), Lưu vé <code>ER</code>.</li>
+            <li><strong>Chuyển SL:</strong> Assign ticket sang Fulfillment queue.</li>
+          </ol>
+        </div>
+
       </div>
     </div>
   </div>
+
 
   <!-- Floating Toast Notifications -->
   <div class="toast-container" id="toastContainer"></div>
