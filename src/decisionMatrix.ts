@@ -6,6 +6,7 @@ export class DecisionMatrix {
   private dataStore: DataStore;
   private snippetEngine: SnippetEngine;
   private selectedValues: Record<string, string> = {};
+  private autoPrefilledFields: Record<string, boolean> = {};
   private currentMatchedPath: DecisionPath | null = null;
 
   private container!: HTMLElement;
@@ -37,6 +38,7 @@ export class DecisionMatrix {
 
   public reset(): void {
     this.selectedValues = {};
+    this.autoPrefilledFields = {};
     this.currentMatchedPath = null;
     this.renderForm();
     this.renderActionCard(null);
@@ -47,6 +49,20 @@ export class DecisionMatrix {
     if (firstSelect) {
       firstSelect.focus();
     }
+  }
+
+  public refreshContextBanner(): void {
+    const ctx = (window as any).ctxData;
+    if (ctx) {
+      if (ctx.partialPax && this.selectedValues['request'] && this.selectedValues['ticket_state'] === undefined) {
+        this.renderForm();
+      } else if (!ctx.partialPax && this.autoPrefilledFields['ticket_state']) {
+        delete this.selectedValues['ticket_state'];
+        delete this.autoPrefilledFields['ticket_state'];
+        this.renderForm();
+      }
+    }
+    this.renderActionCard(this.currentMatchedPath);
   }
 
   private getSchema(): MatrixField[] {
@@ -68,6 +84,11 @@ export class DecisionMatrix {
     ];
 
     if (request === 'Cancel') {
+      if ((window as any).ctxData?.partialPax && this.selectedValues['ticket_state'] === undefined) {
+        this.selectedValues['ticket_state'] = 'Partial used';
+        this.autoPrefilledFields['ticket_state'] = true;
+      }
+
       fields.push({
         id: 'ticket_state',
         label: '2. Ticket / Order State',
@@ -177,6 +198,11 @@ export class DecisionMatrix {
           ]
         });
 
+        if ((window as any).ctxData?.partialPax && this.selectedValues['ticket_state'] === undefined) {
+          this.selectedValues['ticket_state'] = 'Partial used';
+          this.autoPrefilledFields['ticket_state'] = true;
+        }
+
         fields.push({
           id: 'ticket_state',
           label: '4. Ticket State',
@@ -208,6 +234,9 @@ export class DecisionMatrix {
 
     fields.forEach((field, idx) => {
       const currentVal = this.selectedValues[field.id] || '';
+      const isAuto = this.autoPrefilledFields[field.id] && currentVal === 'Partial used';
+      const autoBadge = isAuto ? '<span class="badge-auto-context">Auto from Context</span>' : '';
+
       const optionsHtml = field.options.map(opt => `
         <option value="${this.escapeHtml(opt.value)}" ${opt.value === currentVal ? 'selected' : ''}>
           ${this.escapeHtml(opt.label)}
@@ -217,7 +246,7 @@ export class DecisionMatrix {
       html += `
         <div class="matrix-step-group">
           <label class="field-label" for="matrix_${field.id}">
-            <span>${field.label}</span>
+            <span>${field.label} ${autoBadge}</span>
             <span class="step-counter">${idx + 1}/${fields.length}</span>
           </label>
           <div class="custom-select-wrapper">
@@ -245,12 +274,14 @@ export class DecisionMatrix {
 
   private handleFieldChange(fieldId: string, val: string): void {
     this.selectedValues[fieldId] = val;
+    this.autoPrefilledFields[fieldId] = false;
 
     const fields = this.getSchema();
     const changedIdx = fields.findIndex(f => f.id === fieldId);
     if (changedIdx !== -1) {
       for (let i = changedIdx + 1; i < fields.length; i++) {
         delete this.selectedValues[fields[i].id];
+        delete this.autoPrefilledFields[fields[i].id];
       }
     }
 
@@ -323,11 +354,50 @@ export class DecisionMatrix {
     }
   }
 
+  private getContextBannerHtml(): string {
+    const c = (window as any).ctxData || {};
+    const hasPnr = !!(c.pnr && c.pnr.trim());
+    const hasAirline = !!(c.airline && c.airline.trim());
+    const hasPax = !!(c.pax && c.pax.trim() && c.pax !== '[pax]' && c.pax !== '[số khách]');
+    const hasLastName = !!(c.lastName && c.lastName.trim());
+    const hasChild = !!c.hasChild;
+    const hasInfant = !!c.hasInfant;
+    const hasPartial = !!c.partialPax;
+    const isBcom = c.brand === 'BCOM';
+
+    const hasAny = hasPnr || hasAirline || hasPax || hasLastName || hasChild || hasInfant || hasPartial || isBcom;
+    if (!hasAny) return '';
+
+    const chips: string[] = [];
+    if (hasPnr) chips.push(`<span class="context-chip"><strong>PNR:</strong> ${this.escapeHtml(c.pnr.trim())}</span>`);
+    if (hasAirline) chips.push(`<span class="context-chip"><strong>Airline:</strong> ${this.escapeHtml(c.airline.trim())}</span>`);
+    if (hasPax) chips.push(`<span class="context-chip"><strong>Pax:</strong> ${this.escapeHtml(c.pax.trim())}</span>`);
+    if (hasLastName) chips.push(`<span class="context-chip"><strong>Name:</strong> ${this.escapeHtml(c.lastName.trim())}</span>`);
+    if (hasChild) chips.push(`<span class="context-chip context-chip-info">👶 CHD on PNR — price correctly</span>`);
+    if (hasInfant) chips.push(`<span class="context-chip context-chip-info">🍼 INF on PNR — SSR INFT</span>`);
+    if (hasPartial) chips.push(`<span class="context-chip context-chip-warn">✂️ Partial Pax / Split PNR</span>`);
+    if (isBcom) chips.push(`<span class="context-chip context-chip-highlight">🚫 No ETG service fee / No airline penalty (Booking.com)</span>`);
+
+    return `
+      <div class="action-card-context-banner" id="actionCardContextBanner">
+        <div class="context-banner-title">
+          <span>📇 Booking Context Active</span>
+        </div>
+        <div class="context-banner-chips">
+          ${chips.join('')}
+        </div>
+      </div>
+    `;
+  }
+
   private renderActionCard(path: DecisionPath | null): void {
     if (!this.actionCardContainer) return;
 
+    const bannerHtml = this.getContextBannerHtml();
+
     if (!path) {
       this.actionCardContainer.innerHTML = `
+        ${bannerHtml}
         <div class="action-card-empty">
           <div class="empty-icon">🧭</div>
           <h3>No Path Selected</h3>
@@ -417,6 +487,7 @@ export class DecisionMatrix {
     `;
 
     this.actionCardContainer.innerHTML = `
+      ${bannerHtml}
       <div class="action-card-content">
         <div class="action-card-header">
           <div class="path-badge-container">

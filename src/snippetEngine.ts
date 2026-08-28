@@ -257,8 +257,14 @@ export class SnippetEngine {
 
     this.varModalTitle.textContent = `Fill Variables: ${snippet.title}`;
 
+    const c = (window as any).ctxData || {};
+
     const defaults: Record<string, string> = {
-      cust_name: 'Customer',
+      cust_name: (c.lastName && c.lastName.trim()) ? c.lastName.trim() : 'Customer',
+      order_num: (c.pnr && c.pnr.trim()) ? c.pnr.trim() : 'ETG-984210',
+      pnr: (c.pnr && c.pnr.trim()) ? c.pnr.trim() : 'ABCDEF',
+      airline: (c.airline && c.airline.trim()) ? c.airline.trim() : 'VN',
+      pax_count: (c.pax && c.pax.trim() && c.pax !== '[pax]' && c.pax !== '[số khách]') ? c.pax.trim() : '1',
       agent_name: 'Alex',
       currency: 'EUR',
       amount: '50.00',
@@ -268,7 +274,6 @@ export class SnippetEngine {
       tax_amount: '65.00',
       date: 'tomorrow',
       request: 'flight cancellation',
-      order_num: 'ETG-984210',
       action_taken: 'the cancellation request',
       ref_number: 'RF-88231',
       email: 'customer@example.com',

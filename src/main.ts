@@ -69,6 +69,10 @@ class App {
     this.snippetEngine.init();
     this.decisionMatrix.init();
     this.cepStepper.init();
+
+    (window as any).decisionMatrix = this.decisionMatrix;
+    (window as any).snippetEngine = this.snippetEngine;
+
     this.isInitialized = true;
 
     window.renderDynamicCommands();
@@ -178,6 +182,11 @@ window.updateContext = function () {
     partialPax: checked('ctxPartialPax'),
   };
   window.renderDynamicCommands();
+
+  const dm = (window as any).decisionMatrix || (window as any).appInstance?.decisionMatrix;
+  if (dm && typeof dm.refreshContextBanner === 'function') {
+    dm.refreshContextBanner();
+  }
 };
 
 window.switchAmadeusTab = function (tab: 'commands' | 'workflow') {
