@@ -44,7 +44,7 @@ class App {
 
     this.decisionMatrix = new DecisionMatrix(this.dataStore, this.snippetEngine);
     this.cepStepper = new CepStepper(this.snippetEngine);
-    this.sopManager = new Sop (
+    this.sopManager = new SopManager(
       this.dataStore,
       this.snippetEngine,
       this.decisionMatrix,
