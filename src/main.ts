@@ -134,14 +134,15 @@ class App {
       .replace(/"/g, '&quot;');
   }
 }
-window.ctxData = { pnr: '', airline: '', pax: '', lastName: '' };
+window.ctxData = { brand: 'ETG', pnr: '', airline: '', pax: '', lastName: '' };
 
 window.updateContext = function() {
   window.ctxData = {
     pnr: (document.getElementById('ctxPnr').value || '').toUpperCase(),
     airline: (document.getElementById('ctxAirline').value || '').toUpperCase(),
     pax: document.getElementById('ctxPaxCount').value || '[số khách]',
-    lastName: (document.getElementById('ctxLastName').value || '').toUpperCase()
+    lastName: (document.getElementById('ctxLastName').value || '').toUpperCase(),
+    brand: document.getElementById('ctxBrand') ? document.getElementById('ctxBrand').value : 'ETG'
   };
   renderDynamicCommands();
 };
