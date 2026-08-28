@@ -1,0 +1,278 @@
+[
+  {
+    "id": "cxl_void_window",
+    "title": "Void (Within Window)",
+    "when": [
+      "Request = Cancel",
+      "Ticket state = Just booked (within void window)"
+    ],
+    "fl_steps": [
+      "Check claimability in Edvin",
+      "Process Void in GDS (TRDC/ALL for Amadeus, etc.)",
+      "Cancel associated EMD ancillaries",
+      "Run Rebooking Wizard / Refund"
+    ],
+    "snippets": [
+      "ack_request",
+      "void_confirm"
+    ],
+    "alternatives": [],
+    "forbidden": [
+      "Do not process void if claimability is False",
+      "Do not forget to cancel EMDs"
+    ],
+    "handoff": "None",
+    "source": "Lesson: Introduction to Cancellations",
+    "last_verified": "2026-08-28",
+    "needs_shelf_check": false
+  },
+  {
+    "id": "add_ancillary_under_48h",
+    "title": "Add Ancillary (< 48h before departure)",
+    "when": [
+      "Request = Add Baggage/Seat",
+      "Time = < 48h before departure"
+    ],
+    "fl_steps": [
+      "Inform customer it is too close to departure (48h deadline for LCC/portal)",
+      "Escalate if strictly needed per doc"
+    ],
+    "snippets": [
+      "ancillary_too_late"
+    ],
+    "alternatives": [
+      "Suggest purchasing directly at the airport"
+    ],
+    "forbidden": [
+      "Do not attempt to add ancillaries via GDS/Edvin <48h"
+    ],
+    "handoff": "Customer Care Escalations (if urgent YY needed)",
+    "source": "LCC Ancillaries Guidelines",
+    "last_verified": "2026-08-28",
+    "needs_shelf_check": true
+  },
+  {
+    "id": "lcc_void",
+    "title": "LCC Void (Same Calendar Day)",
+    "when": [
+      "Request = Cancel",
+      "System = LCC",
+      "Time = Same calendar day"
+    ],
+    "fl_steps": [
+      "Inform customer handling fees apply",
+      "Select 'Void' in Modify Order",
+      "Copy pop-up message into errand",
+      "Send CXL conf LCC void"
+    ],
+    "snippets": [
+      "lcc_cxl_fee_warning"
+    ],
+    "alternatives": [],
+    "forbidden": [
+      "Never promise a full refund for LCC"
+    ],
+    "handoff": "Payouts/Refunds",
+    "source": "Lesson: LCC Handling",
+    "last_verified": "2026-08-28",
+    "needs_shelf_check": false
+  },
+  {
+    "id": "amadeus_rebooking_unused",
+    "title": "Amadeus Rebooking (Unused Ticket)",
+    "when": [
+      "Request = Rebook",
+      "System = Amadeus",
+      "Ticket State = Unused"
+    ],
+    "fl_steps": [
+      "Ensure Segment is HK and Ticket is O (Open)",
+      "Use FXQ/FXO to calculate",
+      "Deduct penalty manually if customer has Flexible Ticket",
+      "Send payment link",
+      "XE old segment, ER to save",
+      "Handoff to Fulfillment"
+    ],
+    "snippets": [
+      "rebook_quote"
+    ],
+    "alternatives": [
+      "Void & Rebook if within void window (cheaper)"
+    ],
+    "forbidden": [
+      "Do not downgrade booking class",
+      "Do not forget to check Flexible Ticket in Edvin"
+    ],
+    "handoff": "Fulfillment",
+    "source": "Lesson: Amadeus Rebooking - ATC",
+    "last_verified": "2026-08-28",
+    "needs_shelf_check": false
+  },
+  {
+    "id": "name_correction_naco",
+    "title": "Name Correction (NACO <=3 chars or marriage)",
+    "when": [
+      "Request = Name Change",
+      "Type = <=3 chars or marriage (NACO)"
+    ],
+    "fl_steps": [
+      "Check 24h void rule first",
+      "Check Edvin 'NAME' tab for airline policy",
+      "Collect airline + handling fee (waived if Support Package)",
+      "Update Name & Reissue Ticket"
+    ],
+    "snippets": [
+      "name_correction_quote"
+    ],
+    "alternatives": [
+      "Void and rebook if within window"
+    ],
+    "forbidden": [
+      "Do not guarantee name change without checking Edvin",
+      "Brazilian customers: always initiate with airline first"
+    ],
+    "handoff": "Fulfillment",
+    "source": "Lesson: NACO/NACH",
+    "last_verified": "2026-08-28",
+    "needs_shelf_check": false
+  },
+  {
+    "id": "fm_sc_involuntary",
+    "title": "Involuntary CXL / Rebook (Force Majeure / SC)",
+    "when": [
+      "Request = Cancel / Rebook",
+      "Disruption flag = Force Majeure / Schedule Change"
+    ],
+    "fl_steps": [
+      "Verify airline FM/SC policy in Edvin",
+      "Process involuntary refund/rebooking",
+      "Ensure NO ETG service fee is applied"
+    ],
+    "snippets": [
+      "fm_sc_inform"
+    ],
+    "alternatives": [],
+    "forbidden": [
+      "Do not apply ETG voluntary service fee"
+    ],
+    "handoff": "Refunds / SC Team",
+    "source": "Lesson: Force Majeure or Schedule Change?",
+    "last_verified": "2026-08-28",
+    "needs_shelf_check": true
+  },
+  {
+    "id": "vol_cxl_penalty_etg_fee",
+    "title": "Voluntary Cancellation (Penalty + ETG Fee)",
+    "when": [
+      "Request = Cancel",
+      "Ticket state = Fully unused issued",
+      "Fare outcome direction = Refundable w/ airline fee"
+    ],
+    "fl_steps": [
+      "Read fare rules in GDS/Edvin for penalty amount",
+      "Quote refund amount minus penalty and ETG handling fee",
+      "Obtain explicit customer agreement before clicking Modify",
+      "Cancel segment in GDS and create refund errand in Edvin"
+    ],
+    "snippets": [
+      "vol_cxl_quote",
+      "cxl_confirm_agreement"
+    ],
+    "alternatives": [
+      "Offer rebooking if passenger only wants to change dates"
+    ],
+    "forbidden": [
+      "Do not click Modify Order before customer clearly agrees to the refund quote",
+      "Do not guarantee refund processing time faster than standard bank timeline"
+    ],
+    "handoff": "Refunds / Payouts Queue",
+    "source": "Voluntary Cancellation Standard SOP",
+    "last_verified": "2026-08-28",
+    "needs_shelf_check": false
+  },
+  {
+    "id": "cxl_tax_only",
+    "title": "Non-refundable Fare (Tax-Only Refund)",
+    "when": [
+      "Request = Cancel",
+      "Fare outcome direction = Tax only"
+    ],
+    "fl_steps": [
+      "Verify non-refundable base fare & refundable tax components",
+      "Split passenger PNR first if only partial passengers are canceling",
+      "Inform customer that only airport/government taxes will be refunded minus handling fee",
+      "Obtain customer confirmation"
+    ],
+    "snippets": [
+      "tax_only_quote"
+    ],
+    "alternatives": [
+      "Offer rebooking alternative if airline allows change with penalty",
+      "Offer airline travel credit if available"
+    ],
+    "forbidden": [
+      "Do not cancel entire booking without splitting passenger first if partial pax",
+      "Never promise base fare refund on non-refundable tickets"
+    ],
+    "handoff": "Refunds",
+    "source": "Tax Refund Procedures & Split PNR SOP",
+    "last_verified": "2026-08-28",
+    "needs_shelf_check": false
+  },
+  {
+    "id": "cxl_protection_cfar",
+    "title": "Cancellation Protection / CFAR Claim",
+    "when": [
+      "Request = Cancel",
+      "CXL product on order = CXL Protection / CFAR"
+    ],
+    "fl_steps": [
+      "Verify CFAR/Protection product active in Edvin",
+      "Check deadline (e.g., must be claimed >24h before first flight)",
+      "Guide customer to submit claim via self-service portal or process internal claim per product rule",
+      "Cancel PNR in GDS once claim is validated"
+    ],
+    "snippets": [
+      "cfar_claim_guide"
+    ],
+    "alternatives": [
+      "Standard airline cancellation if CFAR deadline expired"
+    ],
+    "forbidden": [
+      "Do not promise 100% cash refund if product covers voucher only",
+      "Do not approve claim if deadline has passed"
+    ],
+    "handoff": "CFAR / Claims Queue",
+    "source": "Ancillary Products: Cancellation Protection SOP",
+    "last_verified": "2026-08-28",
+    "needs_shelf_check": false
+  },
+  {
+    "id": "refund_status_check",
+    "title": "Refund Status / Timeline Inquiry",
+    "when": [
+      "Request = Refund status only",
+      "Ticket state = Already in refund flow"
+    ],
+    "fl_steps": [
+      "Check Payouts tab & Edvin history for refund batch status",
+      "If within 10-15 business days standard bank turnaround, reassure customer",
+      "If exceeded SLA, check bank ARN / payout error and escalate if needed"
+    ],
+    "snippets": [
+      "reftime_standard",
+      "reftime_escalated"
+    ],
+    "alternatives": [
+      "Provide ARN / payment proof if bank investigation needed"
+    ],
+    "forbidden": [
+      "Do not promise immediate same-day bank reflection",
+      "Do not issue duplicate refund"
+    ],
+    "handoff": "Payouts / Finance (if SLA breached)",
+    "source": "Refunds Tracking & SLA Guide",
+    "last_verified": "2026-08-28",
+    "needs_shelf_check": false
+  }
+]

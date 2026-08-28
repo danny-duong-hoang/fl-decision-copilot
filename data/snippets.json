@@ -1,0 +1,519 @@
+[
+  {
+    "id": "open_greeting",
+    "triggers": [
+      "@1hi",
+      "@hi",
+      "hi"
+    ],
+    "title": "Standard Opening Greeting",
+    "cep_step": "opening",
+    "paths": [
+      "*"
+    ],
+    "text": "Hello {cust_name}! Thank you for contacting customer support. My name is {agent_name}. How may I assist you today?",
+    "vars": [
+      "cust_name",
+      "agent_name"
+    ],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "open_booking_ack",
+    "triggers": [
+      "@1hibooking",
+      "@hibooking"
+    ],
+    "title": "Greeting with Booking Reference",
+    "cep_step": "opening",
+    "paths": [
+      "*"
+    ],
+    "text": "Hello {cust_name}! Thank you for contacting us regarding your booking {order_num}. My name is {agent_name}, and I will be glad to assist you today.",
+    "vars": [
+      "cust_name",
+      "order_num",
+      "agent_name"
+    ],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "ack_request",
+    "triggers": [
+      "@ack",
+      "@2ack",
+      "ack"
+    ],
+    "title": "Acknowledge request",
+    "cep_step": "acknowledgement",
+    "paths": [
+      "*"
+    ],
+    "text": "Based on what you’ve shared, I understand that you need help with {request}. Is that correct?",
+    "vars": [
+      "request"
+    ],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "ack_empathy",
+    "triggers": [
+      "@ackempathy",
+      "empathy"
+    ],
+    "title": "Acknowledge with Empathy",
+    "cep_step": "acknowledgement",
+    "paths": [
+      "*"
+    ],
+    "text": "I completely understand how important this is for you, and I appreciate your patience. Let me review your booking details right away.",
+    "vars": [],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "commit_ownership",
+    "triggers": [
+      "@comm",
+      "@3comm",
+      "commit"
+    ],
+    "title": "Ownership Commitment",
+    "cep_step": "commitment",
+    "paths": [
+      "*"
+    ],
+    "text": "I will gladly take ownership of this for you and explore the best available options according to airline policies.",
+    "vars": [],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "probe_order",
+    "triggers": [
+      "@askordernumber",
+      "@propi",
+      "@prop"
+    ],
+    "title": "Request Order / PNR Number",
+    "cep_step": "probing",
+    "paths": [
+      "*"
+    ],
+    "text": "To help me locate your booking, could you please provide your order reference number and the full name of the primary passenger?",
+    "vars": [],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "void_confirm",
+    "triggers": [
+      "@void",
+      "void confirm"
+    ],
+    "title": "Void Confirmation",
+    "cep_step": "solution",
+    "paths": [
+      "cxl_void_window"
+    ],
+    "text": "Good news! Your ticket was issued very recently and is eligible for a same-day void. We can cancel the booking without standard airline cancellation penalties. Would you like me to proceed with the cancellation now?",
+    "vars": [],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "ancillary_too_late",
+    "triggers": [
+      "@toolate",
+      "48h"
+    ],
+    "title": "Too close to departure (Ancillary)",
+    "cep_step": "solution",
+    "paths": [
+      "add_ancillary_under_48h"
+    ],
+    "text": "I see you would like to add {request}, but because your flight departs in less than 48 hours, the airline's system no longer allows us to add it from our end. We recommend adding this directly at the airport check-in desk.",
+    "vars": [
+      "request"
+    ],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "lcc_cxl_fee_warning",
+    "triggers": [
+      "@lccfee",
+      "lcc cxl"
+    ],
+    "title": "LCC Cancellation Warning",
+    "cep_step": "solution",
+    "paths": [
+      "lcc_void"
+    ],
+    "text": "We can process the cancellation with the airline, but please note that handling fees will apply, and we cannot guarantee a full refund as it depends entirely on the airline's budget fare rules.",
+    "vars": [],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "rebook_quote",
+    "triggers": [
+      "@rebook",
+      "rebook quote"
+    ],
+    "title": "Rebooking Quote",
+    "cep_step": "solution",
+    "paths": [
+      "amadeus_rebooking_unused"
+    ],
+    "text": "To change your flight to {date}, the total cost will be {currency} {amount}. This includes the airline penalty, fare difference, and our service fee. Would you like me to send a secure payment link to proceed?",
+    "vars": [
+      "date",
+      "currency",
+      "amount"
+    ],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "name_correction_quote",
+    "triggers": [
+      "@naco",
+      "name fix"
+    ],
+    "title": "Name Correction Quote",
+    "cep_step": "solution",
+    "paths": [
+      "name_correction_naco"
+    ],
+    "text": "We can correct the name on your ticket. The airline and handling fees for this change total {currency} {amount}. Once paid, we will reissue the ticket with the correct name.",
+    "vars": [
+      "currency",
+      "amount"
+    ],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "fm_sc_inform",
+    "triggers": [
+      "@fmsc",
+      "schedule change",
+      "force majeure"
+    ],
+    "title": "Involuntary Disruption Notice",
+    "cep_step": "solution",
+    "paths": [
+      "fm_sc_involuntary"
+    ],
+    "text": "Because your flight was impacted by a schedule change / force majeure event from the airline, you are eligible for an involuntary change or full refund with no agency cancellation fees. Would you prefer a free rebooking or a refund?",
+    "vars": [],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "vol_cxl_quote",
+    "triggers": [
+      "@ccxl",
+      "cxl quote"
+    ],
+    "title": "Voluntary Cancellation Quote",
+    "cep_step": "solution",
+    "paths": [
+      "vol_cxl_penalty_etg_fee"
+    ],
+    "text": "According to your fare rules, the airline penalty is {currency} {penalty} and our handling fee is {currency} {fee}. The estimated refund amount is {currency} {refund_amount}. Please confirm if you accept this to proceed.",
+    "vars": [
+      "currency",
+      "penalty",
+      "fee",
+      "refund_amount"
+    ],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "tax_only_quote",
+    "triggers": [
+      "@cxlnonref",
+      "tax only"
+    ],
+    "title": "Non-refundable Tax Refund Quote",
+    "cep_step": "solution",
+    "paths": [
+      "cxl_tax_only"
+    ],
+    "text": "Your ticket fare is non-refundable per airline policy. However, we can submit a claim to recover unused airport and government taxes of approximately {currency} {tax_amount} minus our service fee. Would you like to proceed with the tax refund?",
+    "vars": [
+      "currency",
+      "tax_amount"
+    ],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "cfar_claim_guide",
+    "triggers": [
+      "@cfar",
+      "protection claim"
+    ],
+    "title": "CFAR / Cancellation Protection Guide",
+    "cep_step": "solution",
+    "paths": [
+      "cxl_protection_cfar"
+    ],
+    "text": "I can see you purchased Cancellation Protection for this booking. You can claim your refund directly under this policy. Let me guide you to finalize the claim or cancel the booking on your behalf.",
+    "vars": [],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "cxl_confirm_agreement",
+    "triggers": [
+      "@agree",
+      "@5agree",
+      "confirm agreement"
+    ],
+    "title": "Confirm Explicit Agreement",
+    "cep_step": "agreement",
+    "paths": [
+      "*"
+    ],
+    "text": "Before I finalize this change in our reservation system, please explicitly confirm that you accept the total amount of {currency} {amount} and terms stated above.",
+    "vars": [
+      "currency",
+      "amount"
+    ],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "summary_recap",
+    "triggers": [
+      "@sum",
+      "@6sum",
+      "recap"
+    ],
+    "title": "Summary of Request & Next Steps",
+    "cep_step": "summary",
+    "paths": [
+      "*"
+    ],
+    "text": "To summarize our conversation: You requested {request}. We have processed {action_taken}. Your confirmation reference is {ref_number}, and next steps will be sent to your email at {email}.",
+    "vars": [
+      "request",
+      "action_taken",
+      "ref_number",
+      "email"
+    ],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "close_survey",
+    "triggers": [
+      "@close",
+      "@thanks",
+      "closing"
+    ],
+    "title": "Standard Closing & Help Offer",
+    "cep_step": "closing",
+    "paths": [
+      "*"
+    ],
+    "text": "Is there anything else I can assist you with today? Thank you for contacting us, and have a wonderful day ahead!",
+    "vars": [],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "hold_request",
+    "triggers": [
+      "@hold",
+      "hold"
+    ],
+    "title": "Ask for Hold (2 mins)",
+    "cep_step": "hold",
+    "paths": [
+      "*"
+    ],
+    "text": "May I place you on a brief hold for 2–3 minutes while I check the details with the airline system?",
+    "vars": [],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "hold_refresh",
+    "triggers": [
+      "@hold2",
+      "hold update"
+    ],
+    "title": "Hold Refresh / Still Working",
+    "cep_step": "hold",
+    "paths": [
+      "*"
+    ],
+    "text": "Thank you for holding. I am still reviewing the fare rules with the system, I appreciate your patience. May I have another 2 minutes?",
+    "vars": [],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "hold_return",
+    "triggers": [
+      "@acc",
+      "thank you for holding"
+    ],
+    "title": "Thank Customer for Holding",
+    "cep_step": "hold",
+    "paths": [
+      "*"
+    ],
+    "text": "Thank you so much for your patience while on hold. I have the details ready for you.",
+    "vars": [],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "idle_prompt_1",
+    "triggers": [
+      "@idle",
+      "@idle1",
+      "idle 1"
+    ],
+    "title": "Idle Check 1 (1 min)",
+    "cep_step": "idle",
+    "paths": [
+      "*"
+    ],
+    "text": "I haven't heard from you in a moment. Are you still with me?",
+    "vars": [],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "idle_prompt_2",
+    "triggers": [
+      "@idle2",
+      "idle 2"
+    ],
+    "title": "Idle Check 2 (Warning before close)",
+    "cep_step": "idle",
+    "paths": [
+      "*"
+    ],
+    "text": "It seems we haven't received a response. If no further assistance is needed, this chat session will automatically close shortly.",
+    "vars": [],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "payment_link",
+    "triggers": [
+      "@rebklink",
+      "pay link"
+    ],
+    "title": "Payment Link Sent",
+    "cep_step": "solution",
+    "paths": [
+      "*"
+    ],
+    "text": "I have generated a secure payment link for you: {link}. Please complete payment within {expires_min} minutes so we can immediately reissue your ticket.",
+    "vars": [
+      "link",
+      "expires_min"
+    ],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "reftime_standard",
+    "triggers": [
+      "@reftime",
+      "refund time"
+    ],
+    "title": "Refund Timeline (Standard 10-15 days)",
+    "cep_step": "refund_timing",
+    "paths": [
+      "refund_status_check"
+    ],
+    "text": "Once processed, the refund amount will be credited back to your original payment method within 10–15 business days, depending on your bank's billing cycle.",
+    "vars": [],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  },
+  {
+    "id": "reftime_escalated",
+    "triggers": [
+      "@reftime2",
+      "refund escalated"
+    ],
+    "title": "Refund Escalated / Bank Trace",
+    "cep_step": "refund_timing",
+    "paths": [
+      "refund_status_check"
+    ],
+    "text": "Our finance records indicate the refund was released on {payout_date} with ARN {arn_number}. You can share this ARN directly with your card issuing bank to track the credited funds.",
+    "vars": [
+      "payout_date",
+      "arn_number"
+    ],
+    "channel": [
+      "chat"
+    ],
+    "last_verified": "2026-08-28"
+  }
+]
