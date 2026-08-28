@@ -134,7 +134,7 @@ class App {
       .replace(/"/g, '&quot;');
   }
 }
-window.ctxData = { brand: 'ETG', pnr: '', airline: '', pax: '', lastName: '' };
+window.ctxData = { brand: 'ETG', pnr: '', airline: '', pax: '', lastName: '', hasChild: false, hasInfant: false, partialPax: false };
 
 window.updateContext = function() {
   window.ctxData = {
@@ -142,7 +142,10 @@ window.updateContext = function() {
     airline: (document.getElementById('ctxAirline').value || '').toUpperCase(),
     pax: document.getElementById('ctxPaxCount').value || '[số khách]',
     lastName: (document.getElementById('ctxLastName').value || '').toUpperCase(),
-    brand: document.getElementById('ctxBrand') ? document.getElementById('ctxBrand').value : 'ETG'
+    brand: document.getElementById('ctxBrand') ? document.getElementById('ctxBrand').value : 'ETG',
+    hasChild: document.getElementById('ctxHasChild') ? document.getElementById('ctxHasChild').checked : false,
+    hasInfant: document.getElementById('ctxHasInfant') ? document.getElementById('ctxHasInfant').checked : false,
+    partialPax: document.getElementById('ctxPartialPax') ? document.getElementById('ctxPartialPax').checked : false
   };
   renderDynamicCommands();
 };
@@ -159,7 +162,13 @@ window.renderDynamicCommands = function() {
   const pnrCmd = c.pnr ? `RT${c.pnr}` : 'RT[PNR]';
   const nameCmd = c.lastName && c.pax !== '[số khách]' ? `NM${c.pax}${c.lastName}/[TÊN]` : 'NM[số khách][HỌ]/[TÊN]';
   
-  const commands = [
+  let commands = [];
+  if (c.partialPax) {
+    commands.push({ desc: 'Tách PNR (Split Pax) - Amadeus', cmd: `SP[số pax cần tách]` });
+    commands.push({ desc: 'Lưu PNR tách', cmd: `RF${c.lastName || '[TÊN]'};EF` });
+  }
+  commands.push(
+  
     { desc: 'Mở PNR', cmd: pnrCmd },
     { desc: 'Đổi Tên (NACO)', cmd: `NU1${c.lastName || '[HỌ]'}/[FIRST NAME] MS` },
     { desc: 'Kiểm tra trạng thái coupon (Đảm bảo là O)', cmd: 'RTTN' },
@@ -171,7 +180,7 @@ window.renderDynamicCommands = function() {
     { desc: 'Xóa giá cũ (Sửa lỗi segment overlap)', cmd: 'TTE/ALL' },
     { desc: 'Xóa chặng bay cũ', cmd: 'XE[dòng]' },
     { desc: 'Lưu PNR và gửi sang Ticketing', cmd: 'ER' }
-  ];
+  );
 
   const html = commands.map(c => `
     <div class="command-row" style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-secondary); border-radius: 4px; border: 1px solid var(--border-color);">

@@ -101,38 +101,49 @@
   <main class="main-layout">
 
     <!-- Column 1: Snippet Engine (Unikey Improved with Fuse.js) -->
-<!-- Column 1: Snippet Engine (Unikey Improved with Fuse.js) -->
-  <section class="panel context-panel" aria-label="Booking Context" style="margin-bottom: 12px;">
-    <div class="panel-header">
-      <h2 class="panel-title">
+  <section class="panel context-panel" aria-label="Booking Context" style="margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+    <div class="panel-header" style="background: var(--bg-secondary); padding: 12px 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+      <h2 class="panel-title" style="margin: 0; font-size: 1rem;">
         <span class="icon">📇</span> Booking Context (Auto-fill)
       </h2>
       <button class="btn btn-sm" onclick="document.getElementById('contextForm').reset(); updateContext()">Clear</button>
     </div>
-    <div class="panel-body">
-      <form id="contextForm" oninput="updateContext()" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+    <div class="panel-body" style="padding: 16px;">
+      <form id="contextForm" oninput="updateContext()" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
         <div class="form-group" style="grid-column: span 2;">
-          <label>Brand / Đối tác</label>
-          <select id="ctxBrand" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary);">
+          <label style="font-weight: 600; margin-bottom: 4px; display: block;">Brand / Đối tác</label>
+          <select id="ctxBrand" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary);">
             <option value="ETG">ETG (Gotogate, Mytrip, etc.)</option>
             <option value="BCOM">Booking.com (NO Fee, NO Penalty)</option>
           </select>
         </div>
         <div class="form-group">
-          <label>PNR</label>
-          <input type="text" id="ctxPnr" placeholder="e.g. ABCDEF" />
+          <label style="font-weight: 600; margin-bottom: 4px; display: block;">PNR</label>
+          <input type="text" id="ctxPnr" placeholder="e.g. ABCDEF" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); text-transform: uppercase;" />
         </div>
         <div class="form-group">
-          <label>Airline Code</label>
-          <input type="text" id="ctxAirline" placeholder="e.g. VN" maxlength="2" style="text-transform: uppercase;" />
+          <label style="font-weight: 600; margin-bottom: 4px; display: block;">Airline Code</label>
+          <input type="text" id="ctxAirline" placeholder="e.g. VN" maxlength="2" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); text-transform: uppercase;" />
         </div>
         <div class="form-group">
-          <label>Pax Count</label>
-          <input type="number" id="ctxPaxCount" placeholder="e.g. 1" min="1" max="9" />
+          <label style="font-weight: 600; margin-bottom: 4px; display: block;">Pax Count (ADT)</label>
+          <input type="number" id="ctxPaxCount" placeholder="e.g. 1" min="1" max="9" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary);" />
         </div>
         <div class="form-group">
-          <label>Last Name</label>
-          <input type="text" id="ctxLastName" placeholder="e.g. NGUYEN" />
+          <label style="font-weight: 600; margin-bottom: 4px; display: block;">Last Name</label>
+          <input type="text" id="ctxLastName" placeholder="e.g. NGUYEN" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); text-transform: uppercase;" />
+        </div>
+        
+        <div class="form-group" style="grid-column: span 2; display: flex; gap: 16px; align-items: center; margin-top: 8px; padding-top: 12px; border-top: 1px dashed var(--border-color);">
+          <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer;">
+            <input type="checkbox" id="ctxHasChild" /> Child (CHD)
+          </label>
+          <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer;">
+            <input type="checkbox" id="ctxHasInfant" /> Infant (INF)
+          </label>
+          <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer; color: var(--accent-orange);">
+            <input type="checkbox" id="ctxPartialPax" /> Partial Pax (Split)
+          </label>
         </div>
       </form>
     </div>
