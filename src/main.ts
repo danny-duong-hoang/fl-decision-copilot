@@ -209,16 +209,26 @@ class App {
     const toggleBtn = document.getElementById('toggleContextModalBtn');
     const modal = document.getElementById('contextModal');
     const closeBtn = document.getElementById('contextModalClose');
+    const cancelBtn = document.getElementById('contextModalCancel');
     const doneBtn = document.getElementById('contextModalDone');
 
     if (toggleBtn && modal) {
-      toggleBtn.addEventListener('click', () => modal.classList.add('active'));
+      toggleBtn.addEventListener('click', () => {
+        window.updateContext();
+        modal.classList.add('active');
+      });
     }
     if (closeBtn && modal) {
       closeBtn.addEventListener('click', () => modal.classList.remove('active'));
     }
+    if (cancelBtn && modal) {
+      cancelBtn.addEventListener('click', () => modal.classList.remove('active'));
+    }
     if (doneBtn && modal) {
-      doneBtn.addEventListener('click', () => modal.classList.remove('active'));
+      doneBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        this.showToast(`Saved case details (PNR: ${window.ctxData.pnr})`);
+      });
     }
   }
 
@@ -242,8 +252,8 @@ window.ctxData = {
   newDate: '25OCT',
   quoteAmount: '185.00',
   currency: 'EUR',
-  requestName: 'rebooking 2 passengers on the return flight',
-  solutionName: 'splitting PNR to rebook 2 ADT to 25OCT, keeping 1 ADT on original date',
+  requestName: 'rebooking 2 passengers on flight to 25OCT',
+  solutionName: 'splitting PNR to rebook 2 passengers to 25OCT on VN',
   hasChild: false,
   hasInfant: false,
   partialPax: true,
@@ -253,23 +263,67 @@ window.updateContext = function () {
   const val = (id: string) => (document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null)?.value || '';
   const checked = (id: string) => !!(document.getElementById(id) as HTMLInputElement | null)?.checked;
 
+  const brand = val('ctxBrand') || 'ETG';
+  const pnr = (val('ctxPnr') || 'HT89KL').toUpperCase().trim();
+  const airline = (val('ctxAirline') || 'VN').toUpperCase().trim();
+  const pax = val('ctxPaxCount') || '2';
+  const lastName = (val('ctxLastName') || 'NGUYEN').toUpperCase().trim();
+  const newDate = (val('ctxNewDate') || '25OCT').toUpperCase().trim();
+  const quoteAmount = val('ctxAmount') || '185.00';
+  const currency = val('ctxCurrency') || 'EUR';
+  const hasChild = checked('ctxHasChild');
+  const hasInfant = checked('ctxHasInfant');
+  const partialPax = checked('ctxPartialPax');
+
+  // Dynamic requestName and solutionName built from user input fields (no hardcoded English strings)
+  const paxNum = parseInt(pax, 10) || 1;
+  const paxLabel = paxNum === 1 ? '1 passenger' : `${paxNum} passengers`;
+  const extraTags: string[] = [];
+  if (hasChild) extraTags.push('with child');
+  if (hasInfant) extraTags.push('with infant');
+  const extraDesc = extraTags.length > 0 ? ` (${extraTags.join(', ')})` : '';
+
+  const requestName = `rebooking ${paxLabel}${extraDesc} on flight to ${newDate}`;
+  const solutionName = partialPax
+    ? `splitting PNR to rebook ${paxLabel}${extraDesc} to ${newDate} on ${airline}`
+    : `rebooking ${paxLabel}${extraDesc} to ${newDate} on ${airline}`;
+
   window.ctxData = {
-    brand: val('ctxBrand') || 'ETG',
-    pnr: (val('ctxPnr') || 'HT89KL').toUpperCase(),
-    airline: (val('ctxAirline') || 'VN').toUpperCase(),
-    pax: val('ctxPaxCount') || '2',
-    lastName: (val('ctxLastName') || 'NGUYEN').toUpperCase(),
-    newDate: val('ctxNewDate') || '25OCT',
-    quoteAmount: val('ctxAmount') || '185.00',
-    currency: 'EUR',
-    requestName: 'rebooking 2 passengers on the return flight',
-    solutionName: 'splitting PNR to rebook 2 ADT to 25OCT, keeping 1 ADT on original date',
-    hasChild: checked('ctxHasChild'),
-    hasInfant: checked('ctxHasInfant'),
-    partialPax: checked('ctxPartialPax'),
+    brand,
+    pnr,
+    airline,
+    pax,
+    lastName,
+    newDate,
+    quoteAmount,
+    currency,
+    requestName,
+    solutionName,
+    hasChild,
+    hasInfant,
+    partialPax,
   };
 
+  // Live preview box update in modal
+  const previewCueEl = document.getElementById('previewCueText');
+  if (previewCueEl) {
+    const custSalutation = lastName ? `Mr./Ms. ${lastName}` : 'Customer';
+    previewCueEl.textContent = `“Thank you for holding, ${custSalutation}. I understand you need help with ${requestName}. I can assist you with ${solutionName}. The total quote is ${currency} ${quoteAmount}.”`;
+  }
+
+  const previewCmdEl = document.getElementById('previewCmdText');
+  if (previewCmdEl) {
+    if (partialPax && paxNum > 1) {
+      previewCmdEl.textContent = `RT${pnr} → SP1,${paxNum} → ER → RTAXR`;
+    } else {
+      previewCmdEl.textContent = `RT${pnr} → SN${newDate}SGNPAR/A${airline} → FXQ/S5/R,UP`;
+    }
+  }
+
   const app = window.appInstance;
+  if (app && app.scriptCueEngine) {
+    app.scriptCueEngine.refresh();
+  }
   if (app && app.decisionMatrix) {
     app.decisionMatrix.evaluateMatches();
   }

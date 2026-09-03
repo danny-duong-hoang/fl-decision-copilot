@@ -97,9 +97,9 @@
         <span id="densityModeText">Comfort</span>
       </button>
 
-      <!-- Quick Context Toggle -->
-      <button class="btn btn-secondary" id="toggleContextModalBtn" title="Active Booking Context">
-        <span>📇 Context</span>
+      <!-- Case Details Toggle -->
+      <button class="btn btn-secondary" id="toggleContextModalBtn" title="Case details (PNR, price, date into cues & commands)">
+        <span>📇 Case details</span>
       </button>
 
       <!-- SOP & Data Manager -->
@@ -217,54 +217,112 @@
 
   <!-- Modals & Overlays -->
 
-  <!-- Booking Context Modal -->
+  <!-- Case Details Modal (Fills PNR, Price, Date into Cues & Commands) -->
   <div class="modal-overlay" id="contextModal">
-    <div class="modal-card">
+    <div class="modal-card case-details-modal">
       <div class="modal-header">
-        <h3 class="modal-title">📇 Booking Context (Auto-interpolates Cues & Commands)</h3>
+        <div class="modal-header-titles">
+          <h3 class="modal-title">📇 Case details</h3>
+          <p class="modal-subtitle-text">Fills PNR, price, date into cues & GDS commands · Does NOT choose the policy path — use Decision Matrix for that.</p>
+        </div>
         <button type="button" class="modal-close-btn" id="contextModalClose">&times;</button>
       </div>
       <form id="contextForm" oninput="updateContext()" onsubmit="return false;">
-        <div class="modal-body context-grid-form">
-          <div class="form-group">
-            <label for="ctxBrand">Brand / Partner</label>
-            <select id="ctxBrand">
-              <option value="ETG">ETG (Gotogate, Mytrip...)</option>
-              <option value="BCOM">Booking.com (NO ETG Fee / NO Penalty)</option>
-            </select>
+        <div class="modal-body case-details-body">
+
+          <!-- Primary Fields (Minimal & Balanced 2 Rows) -->
+          <div class="case-primary-rows">
+            <!-- Row 1: 1) PNR · 2) Brand · 3) Airline -->
+            <div class="case-row-grid case-row-top">
+              <div class="form-group">
+                <label for="ctxPnr">1) PNR</label>
+                <input type="text" id="ctxPnr" value="HT89KL" placeholder="HT89KL" maxlength="8" autocomplete="off" />
+              </div>
+
+              <div class="form-group flex-brand">
+                <label for="ctxBrand">2) Brand</label>
+                <select id="ctxBrand" class="brand-select-full">
+                  <option value="ETG" selected>ETG</option>
+                  <option value="BCOM">Booking.com — no ETG service fee</option>
+                </select>
+              </div>
+
+              <div class="form-group flex-airline">
+                <label for="ctxAirline">3) Airline</label>
+                <input type="text" id="ctxAirline" value="VN" placeholder="VN" maxlength="3" autocomplete="off" />
+              </div>
+            </div>
+
+            <!-- Row 2: 4) Passengers changing · 5) New date · 6) Quote amount + currency -->
+            <div class="case-row-grid case-row-bottom">
+              <div class="form-group flex-pax">
+                <label for="ctxPaxCount">
+                  4) Passengers changing
+                  <span class="field-hint">Number you are splitting/rebooking now</span>
+                </label>
+                <input type="number" id="ctxPaxCount" value="2" min="1" max="9" />
+              </div>
+
+              <div class="form-group flex-date">
+                <label for="ctxNewDate">5) New date</label>
+                <input type="text" id="ctxNewDate" value="25OCT" placeholder="25OCT" autocomplete="off" />
+              </div>
+
+              <div class="form-group flex-quote">
+                <label for="ctxAmount">6) Quote amount</label>
+                <div class="amount-currency-group">
+                  <input type="text" id="ctxAmount" value="185.00" placeholder="185.00" autocomplete="off" />
+                  <select id="ctxCurrency" class="currency-select">
+                    <option value="EUR" selected>EUR (€)</option>
+                    <option value="USD">USD ($)</option>
+                    <option value="GBP">GBP (£)</option>
+                    <option value="AUD">AUD (A$)</option>
+                    <option value="CAD">CAD (C$)</option>
+                    <option value="SGD">SGD (S$)</option>
+                    <option value="VND">VND (₫)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="ctxPnr">PNR Locator</label>
-            <input type="text" id="ctxPnr" value="HT89KL" placeholder="HT89KL" maxlength="8" autocomplete="off" />
+
+          <!-- Secondary Collapsed Details -->
+          <details class="secondary-case-collapsible">
+            <summary class="secondary-summary">
+              <span>▼ Additional passenger details (Child, Infant, Last name)</span>
+            </summary>
+            <div class="secondary-fields">
+              <div class="form-group">
+                <label for="ctxLastName">Customer Last Name</label>
+                <input type="text" id="ctxLastName" value="NGUYEN" placeholder="NGUYEN" autocomplete="off" />
+              </div>
+              <div class="context-toggles-row">
+                <label class="toggle-pill"><input type="checkbox" id="ctxHasChild" /> Child present</label>
+                <label class="toggle-pill"><input type="checkbox" id="ctxHasInfant" /> Infant present</label>
+                <label class="toggle-pill warn"><input type="checkbox" id="ctxPartialPax" checked /> Partial Pax (Split)</label>
+              </div>
+            </div>
+          </details>
+
+          <!-- Live Preview Box: Cue Preview + Command Preview -->
+          <div class="live-preview-box">
+            <div class="preview-box-title">⚡ LIVE PREVIEW (UPDATES AS YOU TYPE)</div>
+            <div class="preview-card-inner">
+              <div class="preview-item">
+                <div class="preview-tag-badge cue">🎙️ Cue preview</div>
+                <div class="preview-text-content" id="previewCueText">Loading preview...</div>
+              </div>
+              <div class="preview-item">
+                <div class="preview-tag-badge cmd">💻 Command preview</div>
+                <div class="preview-cmd-content" id="previewCmdText">RTHT89KL → SP1,2 → ER → RTAXR</div>
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="ctxAirline">Airline Code</label>
-            <input type="text" id="ctxAirline" value="VN" placeholder="VN" maxlength="3" autocomplete="off" />
-          </div>
-          <div class="form-group">
-            <label for="ctxPaxCount">Pax Count (ADT)</label>
-            <input type="number" id="ctxPaxCount" value="2" min="1" max="9" />
-          </div>
-          <div class="form-group">
-            <label for="ctxLastName">Customer Last Name</label>
-            <input type="text" id="ctxLastName" value="NGUYEN" placeholder="NGUYEN" autocomplete="off" />
-          </div>
-          <div class="form-group">
-            <label for="ctxNewDate">New Flight Date</label>
-            <input type="text" id="ctxNewDate" value="25OCT" placeholder="25OCT" autocomplete="off" />
-          </div>
-          <div class="form-group">
-            <label for="ctxAmount">Quoted Amount (EUR)</label>
-            <input type="text" id="ctxAmount" value="185.00" placeholder="185.00" autocomplete="off" />
-          </div>
-          <div class="context-toggles-row">
-            <label class="toggle-pill"><input type="checkbox" id="ctxHasChild" /> Child present</label>
-            <label class="toggle-pill"><input type="checkbox" id="ctxHasInfant" /> Infant present</label>
-            <label class="toggle-pill warn"><input type="checkbox" id="ctxPartialPax" checked /> Partial Pax / Split required</label>
-          </div>
+
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary" id="contextModalDone">Apply Context</button>
+          <button type="button" class="btn btn-secondary" id="contextModalCancel">Close</button>
+          <button type="button" class="btn btn-primary" id="contextModalDone">Save case details</button>
         </div>
       </form>
     </div>

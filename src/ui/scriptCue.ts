@@ -202,6 +202,10 @@ export class ScriptCueEngine {
     }
   }
 
+  public refresh(): void {
+    this.renderActiveCueDisplay();
+  }
+
   private renderActiveCueDisplay(): void {
     if (!this.activeCueContainer) return;
 
