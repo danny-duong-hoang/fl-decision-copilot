@@ -10,6 +10,8 @@ export class GdsRunbookEngine {
 
   private container!: HTMLElement;
   private runbookSelectDropdown!: HTMLSelectElement;
+  private currentSegments: string[] = [];
+  public isRunbookFocused: boolean = false;
 
   constructor(dataStore: DataStore, onStepChange?: (step: RunbookStep, total: number) => void) {
     this.dataStore = dataStore;
@@ -24,7 +26,38 @@ export class GdsRunbookEngine {
       const priorityCase = runbooks.find(r => r.id === 'amadeus_rebook_partial_pax') || runbooks[0];
       this.loadRunbook(priorityCase.id);
     }
+    this.initFocusTracking();
     this.bindGlobalKeyboard();
+  }
+
+  private initFocusTracking(): void {
+    const runbookPanel = document.querySelector('.runbook-panel');
+    if (runbookPanel) {
+      runbookPanel.addEventListener('mouseenter', () => {
+        this.isRunbookFocused = true;
+        runbookPanel.setAttribute('data-focused', 'true');
+      });
+      runbookPanel.addEventListener('mouseleave', () => {
+        if (!runbookPanel.contains(document.activeElement)) {
+          this.isRunbookFocused = false;
+          runbookPanel.removeAttribute('data-focused');
+        }
+      });
+      runbookPanel.addEventListener('focusin', () => {
+        this.isRunbookFocused = true;
+        runbookPanel.setAttribute('data-focused', 'true');
+      });
+      runbookPanel.addEventListener('focusout', (e: any) => {
+        if (!runbookPanel.contains(e.relatedTarget)) {
+          this.isRunbookFocused = false;
+          runbookPanel.removeAttribute('data-focused');
+        }
+      });
+      runbookPanel.addEventListener('click', () => {
+        this.isRunbookFocused = true;
+        runbookPanel.setAttribute('data-focused', 'true');
+      });
+    }
   }
 
   public loadRunbook(runbookId: string): void {
@@ -74,7 +107,8 @@ export class GdsRunbookEngine {
 
   private bindGlobalKeyboard(): void {
     document.addEventListener('keydown', (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement).tagName.toLowerCase();
+      const targetEl = e.target as HTMLElement;
+      const tag = targetEl && targetEl.tagName ? targetEl.tagName.toLowerCase() : '';
       const isInput = tag === 'input' || tag === 'textarea' || tag === 'select';
       if (isInput) return;
 
@@ -91,8 +125,82 @@ export class GdsRunbookEngine {
         e.preventDefault();
         const sel = document.getElementById('runbookSelectDropdown') as HTMLSelectElement | null;
         sel?.focus();
+      } else if (e.key >= '1' && e.key <= '9') {
+        const runbookPanel = document.querySelector('.runbook-panel');
+        const isRunbookActive = this.isRunbookFocused || 
+          (runbookPanel && (runbookPanel.contains(document.activeElement) || runbookPanel.matches(':hover') || runbookPanel.getAttribute('data-focused') === 'true'));
+        if (isRunbookActive) {
+          const num = parseInt(e.key, 10);
+          const handled = this.copySegmentByIndex(num - 1);
+          if (handled) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }
       }
     });
+  }
+
+  public splitCmdSegments(cmd: string): string[] {
+    if (!cmd) return [];
+    // Split on "→" and also on " | " if present
+    const raw = cmd.split(/\s*→\s*|\s*\|\s*/);
+    return raw.map(s => s.trim()).filter(s => s.length > 0);
+  }
+
+  public copySegment(seg: string, idx: number): void {
+    if (!seg) return;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(seg).catch(() => {});
+      }
+    } catch {}
+
+    // Visual feedback on the corresponding chip
+    const chip = this.container.querySelector(`.cmd-segment-chip[data-segment-idx="${idx}"]`);
+    if (chip) {
+      chip.classList.add('copied');
+      setTimeout(() => {
+        chip.classList.remove('copied');
+      }, 1200);
+    }
+
+    const appInstance = (window as any).appInstance;
+    if (appInstance && typeof appInstance.showToast === 'function') {
+      appInstance.showToast(`Copied: ${seg}`);
+    }
+  }
+
+  public copySegmentByIndex(index: number): boolean {
+    if (index >= 0 && index < this.currentSegments.length) {
+      this.copySegment(this.currentSegments[index], index);
+      return true;
+    }
+    return false;
+  }
+
+  public copyAllSteps(segments: string[]): void {
+    if (!segments || segments.length === 0) return;
+    // Do NOT copy arrow characters: join with "; "
+    const fullChain = segments.join('; ');
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(fullChain).catch(() => {});
+      }
+    } catch {}
+
+    const btnAll = this.container.querySelector('#btnCopyAllSteps');
+    if (btnAll) {
+      btnAll.innerHTML = '<span>✓ Copied All</span>';
+      setTimeout(() => {
+        btnAll.innerHTML = '<span>📋 Copy all steps</span>';
+      }, 1200);
+    }
+
+    const appInstance = (window as any).appInstance;
+    if (appInstance && typeof appInstance.showToast === 'function') {
+      appInstance.showToast(`Copied all steps: ${fullChain}`);
+    }
   }
 
   public render(): void {
@@ -106,6 +214,8 @@ export class GdsRunbookEngine {
 
     // Interpolate dynamic parameters from context
     const interpolatedCmd = this.interpolateCommand(step.cmd);
+    const segments = this.splitCmdSegments(interpolatedCmd);
+    this.currentSegments = segments;
 
     const isRebookingWizard = rb.wizard_type.toLowerCase().includes('rebooking');
     const isModifyOrder = rb.wizard_type.toLowerCase().includes('modify');
@@ -177,15 +287,32 @@ export class GdsRunbookEngine {
           <h3 class="active-step-title">${this.escapeHtml(step.title)}</h3>
           <p class="active-step-desc">${this.escapeHtml(step.desc)}</p>
 
-          <!-- Large Monospace GDS Command Box -->
-          <div class="cmd-box-container">
+          <!-- Large Monospace GDS Command Chips Box -->
+          <div class="cmd-box-container" tabindex="0" role="region" aria-label="GDS Terminal Commands">
             <div class="cmd-box-header">
-              <span class="cmd-header-label">TERMINAL COMMAND (CLICK TO COPY):</span>
-              <span class="kbd-badge">Single Click</span>
+              <div class="cmd-header-left">
+                <span class="cmd-header-label">TERMINAL ENTRIES (CLICK CHIP OR PRESS 1–${segments.length}):</span>
+              </div>
+              <div class="cmd-header-actions">
+                ${segments.length > 1 ? `
+                  <button type="button" class="btn-copy-all-steps" id="btnCopyAllSteps" title="Copy all steps without arrows">
+                    <span>📋 Copy all steps</span>
+                  </button>
+                ` : ''}
+              </div>
             </div>
-            <div class="cmd-terminal-box" id="activeCmdBox" title="Click to copy GDS command">
-              <code>${this.formatHighlightedCmd(interpolatedCmd)}</code>
-              <button type="button" class="btn-copy-cmd" id="btnCopyCmd">📋 Copy</button>
+
+            <div class="cmd-chips-terminal-bar" id="activeCmdBox">
+              <div class="cmd-chips-row">
+                ${segments.map((seg, idx) => `
+                  ${idx > 0 ? '<span class="cmd-arrow-sep" aria-hidden="true">→</span>' : ''}
+                  <button type="button" class="cmd-segment-chip" data-segment-idx="${idx}" data-cmd="${this.escapeHtml(seg)}" title="Click or press '${idx + 1}' to copy entry: ${this.escapeHtml(seg)}">
+                    <span class="cmd-chip-num">${idx + 1}</span>
+                    <code class="cmd-chip-code">${this.escapeHtml(seg)}</code>
+                    <span class="cmd-chip-feedback">✓ Copied</span>
+                  </button>
+                `).join('')}
+              </div>
             </div>
           </div>
 
@@ -214,10 +341,10 @@ export class GdsRunbookEngine {
       </div>
     `;
 
-    this.bindInnerEvents(interpolatedCmd);
+    this.bindInnerEvents(segments);
   }
 
-  private bindInnerEvents(cmdText: string): void {
+  private bindInnerEvents(segments: string[]): void {
     const sel = this.container.querySelector('#runbookSelectDropdown') as HTMLSelectElement | null;
     if (sel) {
       sel.addEventListener('change', () => {
@@ -228,30 +355,26 @@ export class GdsRunbookEngine {
     const prevBtn = this.container.querySelector('#btnPrevStep');
     const nextBtn = this.container.querySelector('#btnNextStep');
     const doneBtn = this.container.querySelector('#btnToggleDone');
-    const cmdBox = this.container.querySelector('#activeCmdBox');
-    const copyCmdBtn = this.container.querySelector('#btnCopyCmd');
 
     if (prevBtn) prevBtn.addEventListener('click', () => this.prevStep());
     if (nextBtn) nextBtn.addEventListener('click', () => this.nextStep());
     if (doneBtn) doneBtn.addEventListener('click', () => this.toggleCurrentStepDone());
 
-    const copyCmd = () => {
-      navigator.clipboard.writeText(cmdText);
-      if (copyCmdBtn) copyCmdBtn.textContent = '✓ Copied';
-      setTimeout(() => {
-        if (copyCmdBtn) copyCmdBtn.textContent = '📋 Copy';
-      }, 1500);
+    const copyAllBtn = this.container.querySelector('#btnCopyAllSteps');
+    if (copyAllBtn) {
+      copyAllBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.copyAllSteps(segments);
+      });
+    }
 
-      const appInstance = (window as any).appInstance;
-      if (appInstance && typeof appInstance.showToast === 'function') {
-        appInstance.showToast(`Copied GDS Command: ${cmdText}`);
-      }
-    };
-
-    if (cmdBox) cmdBox.addEventListener('click', copyCmd);
-    if (copyCmdBtn) copyCmdBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      copyCmd();
+    this.container.querySelectorAll('.cmd-segment-chip').forEach(chip => {
+      chip.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const idx = parseInt(chip.getAttribute('data-segment-idx') || '0', 10);
+        const seg = chip.getAttribute('data-cmd') || '';
+        this.copySegment(seg, idx);
+      });
     });
 
     this.container.querySelectorAll('.step-dot-item').forEach(dot => {

@@ -160,7 +160,8 @@ class App {
 
   private bindGlobalKeyboard(): void {
     document.addEventListener('keydown', (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement).tagName.toLowerCase();
+      const targetEl = e.target as HTMLElement;
+      const tag = targetEl && targetEl.tagName ? targetEl.tagName.toLowerCase() : '';
       const isInput = tag === 'input' || tag === 'textarea' || tag === 'select';
 
       if (!isInput) {
@@ -185,8 +186,14 @@ class App {
           e.preventDefault();
           this.multiPnrTracker?.toggle();
         }
-        // Shortcuts 1-8 : CEP Steps
+        // Shortcuts 1-8 : CEP Steps (only if Runbook is not active)
         else if (e.key >= '1' && e.key <= '8') {
+          const runbookPanel = document.querySelector('.runbook-panel');
+          const isRunbookActive = this.runbookEngine?.isRunbookFocused || 
+            (runbookPanel && (runbookPanel.contains(document.activeElement) || runbookPanel.matches(':hover') || runbookPanel.getAttribute('data-focused') === 'true'));
+          if (isRunbookActive) {
+            return;
+          }
           const stepNum = parseInt(e.key, 10);
           this.cepManager?.setStepByIndex(stepNum - 1);
         }
