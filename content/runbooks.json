@@ -1,0 +1,329 @@
+[
+  {
+    "id": "amadeus_rebook_partial_pax",
+    "title": "Amadeus: Rebook Partial Pax (Priority Floor Case)",
+    "gds": "amadeus",
+    "scenario": "Rebook 2 ADT out of 3 ADT in 1 PNR, round-trip, outbound flown (F), return open (O)",
+    "wizard_type": "Rebooking Wizard",
+    "branch": [
+      "ATC errors on used segment → Switch to Manual FQP calculation",
+      "Coupon status != O → Route to Coupon Status Branch / Airline queue",
+      "Phone voluntary on issued ticket → Mandatory Edvin Email Verification Gate",
+      "Customer selects MOTO vs Payment Link (30-min validity)"
+    ],
+    "steps": [
+      {
+        "step_num": 1,
+        "title": "Split PNR First (Automation does not auto-split)",
+        "desc": "Retrieve the shared booking. Split off the 2 passengers who are changing dates, then save and retrieve the newly generated split PNR.",
+        "cmd": "RT[PNR] → SP1,2 → ER → RTAXR",
+        "notes": "Original PNR stays untouched for the 1 ADT keeping their original flight date. Work the remaining rebooking steps solely on the split-off PNR."
+      },
+      {
+        "step_num": 2,
+        "title": "Coupon Status & Eligibility Verification",
+        "desc": "Display the electronic ticket image and inspect coupon status per segment.",
+        "cmd": "RTTN → TWD/L[line_num]",
+        "notes": "Outbound must show status F (Flown). Return must show status O (Open). Only Open/Airport Control coupons can be rebooked. If status is C/E/S, stop and request airline reopen."
+      },
+      {
+        "step_num": 3,
+        "title": "Sell New Return Flight Segment(s)",
+        "desc": "Check flight availability for the requested new return date and sell the replacement segment(s) for the 2 passengers.",
+        "cmd": "SN[date][citypair]/A[airline] → SS2[class][line]",
+        "notes": "Keep segment status SS. Do not cancel the old return segment until the new one is priced and agreed."
+      },
+      {
+        "step_num": 4,
+        "title": "Price Calculation: Try ATC first → Fall back to Manual FQP",
+        "desc": "Attempt ATC pricing. Since the outbound leg is already flown, ATC may fail with class or history mismatch. If so, switch to manual FQP calculation.",
+        "cmd": "FXQ/S[new_segments]/R,UP  (Fallback: FQP[dep]/A[airline]/C[class]/D[flown_date][dest]-/A[airline]/C[class]/D[new_date][dest]/R,[office],[issue_date])",
+        "notes": "Calculate Ticket Difference + Tax Difference. Compare new manual fare mask against original e-ticket. Do NOT reprice the flown leg as unused."
+      },
+      {
+        "step_num": 5,
+        "title": "Mandatory Email Verification Gate",
+        "desc": "For phone interactions on voluntary changes to an issued ticket, verify the customer's email address in Edvin before collecting payment.",
+        "cmd": "Edvin ► Verify email button ► Confirm matching registered email",
+        "notes": "Mandatory gate! Always correspond exclusively with the email address registered in Edvin."
+      },
+      {
+        "step_num": 6,
+        "title": "ETG Service Fee & Payment Collection (MOTO / PL)",
+        "desc": "Add Our Service Fee - Vol. Rebooking (40 EUR/pax standard or market equivalent; waived for Booking.com/Platinum/Business). Collect via MOTO or send Payment Link.",
+        "cmd": "Total = Airline Fare Diff + Airline Penalty + ETG Rebooking Fee (x2 pax) → Edvin Add-on Purchase",
+        "notes": "MOTO completes charge on call. Payment Link is strictly valid for 30 minutes for rebooking. Shorten if ticketing deadline is sooner."
+      },
+      {
+        "step_num": 7,
+        "title": "Clean Segments & End Transaction",
+        "desc": "Once payment is verified, cancel the old unused return segment and save the PNR with end-transaction entries.",
+        "cmd": "XE[old_segment] → ER → IR",
+        "notes": "Ensure status is HK for new segments and old segments are removed."
+      },
+      {
+        "step_num": 8,
+        "title": "Handoff: Rebooking Wizard (NOT Modify Order)",
+        "desc": "Link the split PNR in Edvin and submit via Rebooking Wizard to the Ticketing queue for ticket reissue.",
+        "cmd": "Edvin > Link PNR → Rebooking Wizard (Voluntary Rebooking) → Route to Ticketing → Order Status: Changed",
+        "notes": "CRITICAL: Do NOT use Modify Order! Modify Order is strictly for cancellations/refunds. Rebooking without refund MUST go through Rebooking Wizard."
+      }
+    ],
+    "source": "Manual Rebooking Amadeus; 2. Partially used ticket; Section 1: Split a Reservation; 00. Rebooking fees & commands — cheat",
+    "last_verified": "2026-08-30",
+    "needs_shelf_check": false
+  },
+  {
+    "id": "amadeus_rebook_unused_atc",
+    "title": "Amadeus: Rebook Fully Unused Ticket (ATC Flow)",
+    "gds": "amadeus",
+    "scenario": "Customer wants to rebook an unused ticket in Amadeus using automated ATC",
+    "wizard_type": "Rebooking Wizard",
+    "branch": [
+      "ATC successful → Save TST and proceed to payment",
+      "ATC failed → Switch to manual calculation FQP",
+      "Within 24h void window → Offer Void & Rebook if cheaper"
+    ],
+    "steps": [
+      {
+        "step_num": 1,
+        "title": "Open PNR & Check Coupon Status",
+        "desc": "Retrieve PNR, verify segment is HK, and check ticket coupons are O (Open).",
+        "cmd": "RT[PNR] → RTTN → TWD/L[line]",
+        "notes": "Confirm no Schedule Change (UN/TK) is pending."
+      },
+      {
+        "step_num": 2,
+        "title": "Book New Segments",
+        "desc": "Check availability and sell new segment(s) for all passengers.",
+        "cmd": "AN[date][citypair]/A[airline] → SS[pax][class][line]",
+        "notes": "Keep old segments until price is calculated and agreed."
+      },
+      {
+        "step_num": 3,
+        "title": "Calculate Fare with ATC",
+        "desc": "Run automated pricing to generate quote and new TST mask.",
+        "cmd": "FXQ/S[new_segments]/R,UP (or FXO for cheapest option)",
+        "notes": "Note airline fare difference and penalty. Deduct change fee manually if customer has Flexible Ticket product."
+      },
+      {
+        "step_num": 4,
+        "title": "Verify Email Gate & Collect Payment",
+        "desc": "Run Edvin Verify Email check if phone call. Collect fare difference + ETG service fee via MOTO or 30-min Payment Link.",
+        "cmd": "Edvin Verify Email → Add-on Purchase → MOTO or PL",
+        "notes": "No service fee for Booking.com or Platinum orders."
+      },
+      {
+        "step_num": 5,
+        "title": "Cancel Old Segments & Route to Rebooking Wizard",
+        "desc": "Cancel old segments and queue to Ticketing via Rebooking Wizard.",
+        "cmd": "XE[old_segments] → ER → Rebooking Wizard",
+        "notes": "Always use Rebooking Wizard for ticket reissue."
+      }
+    ],
+    "source": "Lesson: Amadeus Rebooking - ATC",
+    "last_verified": "2026-08-30",
+    "needs_shelf_check": false
+  },
+  {
+    "id": "sabre_rebook_partial_pax",
+    "title": "Sabre: Rebook Partial Pax / Partially Used Ticket",
+    "gds": "sabre",
+    "scenario": "Split partial pax in Sabre and reprice partially used ticket",
+    "wizard_type": "Rebooking Wizard",
+    "branch": [
+      "Confirm PCC matches ticket issuing office via *S / AAA[PCC]",
+      "Automated reissue unavailable for partially used → Manual WFRTR",
+      "Rebooking Wizard to Ticketing"
+    ],
+    "steps": [
+      {
+        "step_num": 1,
+        "title": "Check PCC & Split Reservation in Sabre",
+        "desc": "Verify current PCC with *S (switch with AAA[PCC] if needed). Split the changing passenger(s).",
+        "cmd": "*PNR → *S → SP[pax_line] (or D+[pax_line]) → 6[initials] → *D",
+        "notes": "Retrieve the split-off PNR using *D."
+      },
+      {
+        "step_num": 2,
+        "title": "Check Coupon STAT and BAG Allowance",
+        "desc": "Open ticket image to verify coupon status is OPEN or ACTRL.",
+        "cmd": "*T → WETR*[line_num]",
+        "notes": "Note baggage allowance shown next to fare to maintain same allowance."
+      },
+      {
+        "step_num": 3,
+        "title": "Sell New Flight Segments",
+        "desc": "Check Sabre availability and sell new flight segment(s).",
+        "cmd": "1[date][citypair]¥[airline] → 0[seats][class][line]",
+        "notes": "Segment status will be SS."
+      },
+      {
+        "step_num": 4,
+        "title": "Reprice Unused Segment (Manual WFRTR)",
+        "desc": "Run manual reprice mask for unused segment(s) on partially used ticket.",
+        "cmd": "WFRTR[ticket_line]¥A[airline]¥N[pax].1¥S[segment]",
+        "notes": "Read EQV/BASE for new fare, MD for old tax, add penalty from AFTER DEPARTURE section."
+      },
+      {
+        "step_num": 5,
+        "title": "Retain Transaction & Clean Segments",
+        "desc": "Save the retained mask, delete old segments, sign and end transaction.",
+        "cmd": "Retain with X → X[old_segments] → 6[initials] → ER",
+        "notes": "Sys Msg: TRANSACTION RETAINED."
+      },
+      {
+        "step_num": 6,
+        "title": "Email Gate, Payment & Rebooking Wizard",
+        "desc": "Verify email in Edvin, collect payment (Airline Diff + Fee), submit to Rebooking Wizard.",
+        "cmd": "Edvin Verify Email → Collect MOTO/PL → Rebooking Wizard → Ticketing Queue",
+        "notes": "Do not use Modify Order."
+      }
+    ],
+    "source": "Manual Rebooking Sabre; Cheatsheet: Rebooking (Amadeus & Sabre)",
+    "last_verified": "2026-08-30",
+    "needs_shelf_check": true
+  },
+  {
+    "id": "gds_cxl_void_partial_pax_manual",
+    "title": "Amadeus/Sabre: Cancel Partial Pax in Void Window",
+    "gds": "amadeus",
+    "scenario": "Cancel only some passengers within same-day void window",
+    "wizard_type": "Modify Order",
+    "branch": [
+      "Automation does not split → Split manually first",
+      "Infant linked to cancelled pax → Escalate to Support before proceeding",
+      "Order status set to Changed, NOT Cancelled"
+    ],
+    "steps": [
+      {
+        "step_num": 1,
+        "title": "Split PNR Manually",
+        "desc": "Automation void will fail on partial pax. Split the cancelling passengers into a new PNR.",
+        "cmd": "RT[PNR] → SP[pax_numbers] → EF → ER → RTAXR",
+        "notes": "Do not void the shared booking directly."
+      },
+      {
+        "step_num": 2,
+        "title": "Cancel Segments & Void Ticket on Split PNR",
+        "desc": "Add ghost line, cancel segments on split PNR, and void the tickets.",
+        "cmd": "TRDC/ALL (Amadeus) or WV[line] (Sabre)",
+        "notes": "Verify coupon status updates to V (Voided)."
+      },
+      {
+        "step_num": 3,
+        "title": "Link Split PNR in Edvin",
+        "desc": "Link the new PNR to the order in Edvin so the split is tracked.",
+        "cmd": "Edvin > Link PNR → Enter new PNR locator",
+        "notes": "Crucial step so refunds and ticketing can trace the booking."
+      },
+      {
+        "step_num": 4,
+        "title": "Modify Order → Void",
+        "desc": "Run Modify Order with reason 'Void' on the split PNR only.",
+        "cmd": "Modify Order → Reason: Void → Status: Changed",
+        "notes": "Set order status to 'Changed' (NOT 'Cancelled') since remaining pax are still flying."
+      }
+    ],
+    "source": "00. Cancellation & Void — cheat; 1. Cancellation within the Void period",
+    "last_verified": "2026-08-30",
+    "needs_shelf_check": false
+  },
+  {
+    "id": "gds_cxl_fare_rules_voluntary",
+    "title": "GDS Cancellation: Voluntary (Fare Rules Penalty)",
+    "gds": "amadeus",
+    "scenario": "Voluntary cancellation outside void/24h window according to fare rules",
+    "wizard_type": "Modify Order",
+    "branch": [
+      "Refundable w/ penalty → Modify Order: Ticket rules - airline fee",
+      "Tax only refund → Modify Order: Ticket rules - taxes",
+      "No-show passed → Apply higher of cancellation vs no-show penalty"
+    ],
+    "steps": [
+      {
+        "step_num": 1,
+        "title": "Check Fare Rules & Penalties",
+        "desc": "Read fare penalty Category 16 (PE) in GDS to determine cancellation penalty.",
+        "cmd": "FQP[citypair]/A[airline]/C[class]/D[date] → FQN*PE",
+        "notes": "Determine whether fare is Non-refundable, Refundable with penalty, or Tax-only."
+      },
+      {
+        "step_num": 2,
+        "title": "Quote Net Refund to Customer",
+        "desc": "Convert penalty to customer currency, calculate: Net Refund = Ticket Fare & Taxes - Airline Penalty - ETG Service Fee.",
+        "cmd": "Quote Breakdown: Airline Refund - ETG Voluntary CXL Service Fee",
+        "notes": "No ETG service fee on Booking.com / Business / Platinum."
+      },
+      {
+        "step_num": 3,
+        "title": "Confirm Explicit Customer Agreement",
+        "desc": "Wait for clear verbal agreement before cancelling any flights in GDS or running Modify Order.",
+        "cmd": "Speak Agreement Cue: 'The total refund after airline penalty and fees is... do you confirm?'",
+        "notes": "Do not cancel without explicit customer consent."
+      },
+      {
+        "step_num": 4,
+        "title": "Cancel Segments in GDS",
+        "desc": "Cancel the flight segments in GDS and add ghost retention line.",
+        "cmd": "XI → ER",
+        "notes": "Keep PNR alive with retention line."
+      },
+      {
+        "step_num": 5,
+        "title": "Run Modify Order in Edvin",
+        "desc": "Run Modify Order with reason 'Ticket rules - airline fee' or 'Ticket rules - taxes'.",
+        "cmd": "Modify Order → Reason: Ticket rules - airline fee → Zendesk Apply Macro → Refunds",
+        "notes": "Routes errand to SL Refunds queue for payout processing."
+      }
+    ],
+    "source": "Study Guide — CC Amadeus Cancellations; 00. Cancellation & Void — cheat",
+    "last_verified": "2026-08-30",
+    "needs_shelf_check": false
+  },
+  {
+    "id": "gds_ancillary_paid",
+    "title": "GDS Ancillaries: Paid Seat / Baggage (EMD)",
+    "gds": "amadeus",
+    "scenario": "Add paid baggage or seating requiring EMD issuance",
+    "wizard_type": "Add-on Purchase + Ticketing Queue",
+    "branch": [
+      "SSR confirmed HK → Proceed to charge",
+      "SSR unconfirmed / NO FARE → Refer customer to airline",
+      "Customer declines → Remove SSR with XE immediately"
+    ],
+    "steps": [
+      {
+        "step_num": 1,
+        "title": "Open Catalog & Add SSR",
+        "desc": "Check ancillary catalog or seat map and add the SSR entry.",
+        "cmd": "FXK (or SM[segment]) → SR [code]/free text /P[pax]/S[segment]",
+        "notes": "Round-trip requires adding baggage for each segment separately."
+      },
+      {
+        "step_num": 2,
+        "title": "Confirm SSR Status is HK",
+        "desc": "Check AES to confirm airline returned HK status before attempting to charge.",
+        "cmd": "AES (Amadeus) or *AE (Sabre)",
+        "notes": "Do NOT charge customer before SSR status is HK!"
+      },
+      {
+        "step_num": 3,
+        "title": "Charge Customer in Edvin",
+        "desc": "Charge via Add-on purchases in Edvin selecting Baggage GDS / Seating GDS.",
+        "cmd": "Edvin ► Add-on purchases ► Select product ► MOTO / PL",
+        "notes": "Payment link valid 48h for ancillaries (shorten if departure is sooner)."
+      },
+      {
+        "step_num": 4,
+        "title": "Register Errand & Place on Ticketing Queue",
+        "desc": "Register errand with template 'TKT info EMD Ancillary' and queue to BOM TKT / UPA TKT.",
+        "cmd": "Template: TKT info EMD Ancillary → Queue: BOM TKT / UPA TKT – Ancillary post sales",
+        "notes": "Ticketing team issues the EMD."
+      }
+    ],
+    "source": "3. Ancillaries step by step guidelines; 2. How to add ancillaries",
+    "last_verified": "2026-08-30",
+    "needs_shelf_check": false
+  }
+]

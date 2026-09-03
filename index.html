@@ -3,20 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FL Decision Copilot — V1 Chat & CXL</title>
-  <meta name="description" content="Personal copilot for First Line agents handling flight cancellations, rebooking, ancillaries, and name changes.">
+  <title>FL Decision Copilot — Voice V2.11</title>
+  <meta name="description" content="Personal FL Voice copilot beside Genesys, Edvin & GDS: keep CEP scorecard, decide the right path fast, speak short cues naturally, and follow GDS steps without freezing mid-call.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
+  <!-- Local Client Gate (No PII / Local Only) -->
   <div class="login-overlay" id="loginOverlay">
     <div class="login-card">
       <div class="login-header">
         <div class="login-icon">🧭</div>
         <h2 class="login-title">FL Decision Copilot</h2>
-        <p class="login-subtitle">Concentrix / ETG — First Line Authority Assistant</p>
+        <p class="login-subtitle">Voice V2.11 · First Line Authority Assistant</p>
       </div>
       <div class="login-alert-error" id="loginErrorMsg" style="display: none;"></div>
       <form id="loginForm" class="login-form">
@@ -24,262 +25,298 @@
           <label for="loginUsername">Username</label>
           <div class="input-with-icon">
             <span class="field-icon">👤</span>
-            <input type="text" id="loginUsername" placeholder="Enter username" required autocomplete="username" />
+            <input type="text" id="loginUsername" placeholder="Enter username (dannyduong)" required autocomplete="username" />
           </div>
         </div>
         <div class="form-group">
           <label for="loginPassword">Password</label>
           <div class="input-with-icon">
             <span class="field-icon">🔒</span>
-            <input type="password" id="loginPassword" placeholder="Enter password" required autocomplete="current-password" />
+            <input type="password" id="loginPassword" placeholder="Enter password (Hoangkim123)" required autocomplete="current-password" />
           </div>
         </div>
         <div class="form-row-remember">
           <label class="remember-label">
             <input type="checkbox" id="loginRemember" checked />
-            <span>Remember session on this device</span>
+            <span>Remember local session on this device</span>
           </label>
         </div>
         <button type="submit" class="btn btn-primary btn-login">
-          <span>Sign In to Copilot</span>
+          <span>Sign In to Voice Copilot</span>
           <span>→</span>
         </button>
       </form>
       <div class="login-footer">
-        <span>🔐 Private Client-Side Offline Session (Zero PII Storage)</span>
+        <span>🔐 Private Client-Side Offline Session (Zero Server Storage / Zero PII)</span>
       </div>
     </div>
   </div>
 
+  <!-- Header Bar -->
   <header class="app-header">
-    <div class="brand-section">
-      <div class="brand-icon">🧭</div>
-      <div>
-        <h1 class="brand-title">FL Decision Copilot</h1>
+    <div class="header-left">
+      <div class="brand-section">
+        <span class="brand-icon">🧭</span>
+        <div class="brand-titles">
+          <h1 class="brand-title">FL Decision Copilot</h1>
+          <span class="brand-subtitle">Voice V2.11 · data from Notion</span>
+        </div>
       </div>
-      <span class="brand-badge">V1 Chat + CXL</span>
+      <div class="voice-badge">
+        <span class="voice-pulse-dot"></span>
+        <span>VOICE ONLY</span>
+      </div>
     </div>
+
+    <!-- Center CEP 8-Step Stepper -->
+    <div class="header-center">
+      <nav class="stepper-container" id="stepperContainer" aria-label="CEP 8-Step Stepper"></nav>
+    </div>
+
+    <!-- Header Actions & Utility Chips -->
     <div class="header-actions">
-      <button class="btn" id="openCheatSheetBtn" title="Amadeus Commands Cheat Sheet">
-        <span>💡 Amadeus</span>
-      </button>
-      <button class="btn" id="openQaModalBtn" title="Scorecard Pre-Close QA Checklist">
+      <!-- Soft Hold Timer Chip (10-min reminder) -->
+      <div class="hold-timer-chip" id="holdTimerChip" title="Non-blocking 10-minute hold reminder for rebooking quotes">
+        <span class="timer-icon">⏱️</span>
+        <span class="hold-display" id="holdTimerDisplay">00:00</span>
+        <div class="timer-controls">
+          <button type="button" class="btn-timer" id="holdToggleBtn">▶ Hold</button>
+          <button type="button" class="btn-timer btn-timer-reset" id="holdResetBtn" title="Reset timer">↺</button>
+        </div>
+      </div>
+
+      <!-- Pre-close QA Checklist Button -->
+      <button class="btn btn-qa" id="openQaModalBtn" title="Pre-Close QA Scorecard (8 steps)">
         <span>🛡️ Pre-Close QA</span>
-        <span class="kbd-badge">8 Steps</span>
+        <span class="kbd-badge" id="qaBadgeCount">0/8</span>
       </button>
-      <button class="btn" id="openSopManagerBtn" title="Manage Rules & Snippets JSON">
-        <span>⚙️ SOP & JSON Data</span>
+
+      <!-- Quick Context Toggle -->
+      <button class="btn btn-secondary" id="toggleContextModalBtn" title="Active Booking Context">
+        <span>📇 Context</span>
       </button>
-      <button class="btn btn-danger" id="logoutBtn" title="Log Out of Copilot">
-        <span>🚪 Log Out</span>
+
+      <!-- SOP & Data Manager -->
+      <button class="btn btn-secondary" id="openSopManagerBtn" title="Manage Rules & JSON">
+        <span>⚙️ JSON</span>
+      </button>
+
+      <!-- Logout -->
+      <button class="btn btn-danger btn-logout" id="logoutBtn" title="Sign out">
+        <span>🚪</span>
       </button>
     </div>
   </header>
 
-  <div class="cep-stepper-bar">
-    <nav class="stepper-container" id="stepperContainer" aria-label="CEP Steps"></nav>
-  </div>
+  <!-- Main 4-Layer Desktop Grid -->
+  <main class="main-desktop-grid">
+    
+    <!-- TOP ROW: 3 Columns -->
+    <div class="grid-top-row">
 
-  <!-- Exactly 3 grid children: left stack | matrix | action card -->
-  <main class="main-layout">
-
-    <div class="left-column">
-      <section class="panel context-panel" aria-label="Booking Context">
+      <!-- Column 1: Layer C — Script Cue Engine (Voice-First) -->
+      <section class="panel script-cue-panel" aria-label="Layer C: Voice Script Cues">
         <div class="panel-header">
-          <h2 class="panel-title"><span class="icon">📇</span> Booking Context</h2>
-          <button type="button" class="btn btn-sm" id="clearContextBtn">Clear</button>
-        </div>
-        <div class="panel-body context-body">
-          <form id="contextForm" class="context-form" oninput="updateContext()" onsubmit="return false;">
-            <div class="form-group full-width">
-              <label for="ctxBrand">Brand / Đối tác</label>
-              <select id="ctxBrand">
-                <option value="ETG">ETG (Gotogate, Mytrip…)</option>
-                <option value="BCOM">Booking.com (NO Fee / NO Penalty)</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="ctxPnr">PNR</label>
-              <input type="text" id="ctxPnr" placeholder="ABCDEF" maxlength="8" autocomplete="off" />
-            </div>
-            <div class="form-group">
-              <label for="ctxAirline">Airline</label>
-              <input type="text" id="ctxAirline" placeholder="VN" maxlength="2" autocomplete="off" />
-            </div>
-            <div class="form-group">
-              <label for="ctxPaxCount">ADT count</label>
-              <input type="number" id="ctxPaxCount" placeholder="1" min="1" max="9" />
-            </div>
-            <div class="form-group">
-              <label for="ctxLastName">Last name</label>
-              <input type="text" id="ctxLastName" placeholder="NGUYEN" autocomplete="off" />
-            </div>
-            <div class="context-toggles full-width">
-              <label class="toggle-chip"><input type="checkbox" id="ctxHasChild" /> Child</label>
-              <label class="toggle-chip"><input type="checkbox" id="ctxHasInfant" /> Infant</label>
-              <label class="toggle-chip warn"><input type="checkbox" id="ctxPartialPax" /> Partial / Split</label>
-            </div>
-            <p class="context-hint full-width">Partial pax = split PNR first. Never quote exact refund amount — only eligibility + fees when ATC works.</p>
-          </form>
-        </div>
-      </section>
-
-      <section class="panel snippet-panel" aria-label="Snippet Search Engine">
-        <div class="panel-header">
-          <h2 class="panel-title"><span class="icon">⚡</span> Snippet Engine</h2>
-          <span class="kbd-badge">/</span>
-        </div>
-        <div class="panel-body">
-          <div class="snippet-search-box">
-            <div class="search-input-wrapper">
-              <span class="search-icon">🔍</span>
-              <input type="text" id="snippetSearchInput" placeholder="@ack, cxl, rebook…" autocomplete="off" />
-              <span class="search-shortcut kbd-badge">/</span>
-            </div>
+          <div class="panel-title-group">
+            <span class="panel-icon">🎙️</span>
+            <h2 class="panel-title">Script Cue (Voice)</h2>
           </div>
-          <div class="filter-tabs" id="snippetFilterTabs"></div>
-          <div class="snippet-suggestions-popup" id="snippetSuggestionsList"></div>
+          <div class="panel-header-badges">
+            <span class="kbd-badge">/</span>
+            <span class="mode-tag">SPEAK TO CALLER</span>
+          </div>
+        </div>
+        
+        <div class="panel-body script-cue-body">
+          <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="scriptCueSearchInput" placeholder="Type trigger (@ack, @hold, rebook...)" autocomplete="off" />
+            <span class="search-shortcut kbd-badge">/</span>
+          </div>
+
+          <div class="filter-chips-row" id="scriptCueFilterChips"></div>
+
+          <!-- Suggested list popup (max 5) -->
+          <div class="suggestions-list-box" id="scriptCueSuggestions"></div>
+
+          <!-- Active Huge Speak Cue Card -->
+          <div class="active-cue-container" id="scriptCueActiveDisplay"></div>
         </div>
       </section>
+
+      <!-- Column 2: Layer B — Progressive Decision Matrix -->
+      <section class="panel matrix-panel" aria-label="Layer B: Progressive Decision Matrix">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <span class="panel-icon">🔀</span>
+            <h2 class="panel-title">Decision Matrix</h2>
+          </div>
+          <div class="panel-header-actions">
+            <button type="button" class="btn btn-sm btn-secondary" id="resetMatrixBtn">Reset</button>
+            <span class="kbd-badge">M</span>
+          </div>
+        </div>
+
+        <div class="panel-body matrix-body">
+          <div id="matrixStatusContainer" class="matrix-status-bar"></div>
+          <form id="matrixFormContainer" onsubmit="return false;" class="matrix-form"></form>
+        </div>
+      </section>
+
+      <!-- Column 3: Layer B — First Line Action Card -->
+      <section class="panel action-card-panel" aria-label="First Line Action Card">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <span class="panel-icon">📋</span>
+            <h2 class="panel-title">Action Card</h2>
+          </div>
+          <span class="panel-badge-authority">FL AUTHORITY</span>
+        </div>
+
+        <div class="panel-body action-card-body" id="actionCardContainer"></div>
+      </section>
+
     </div>
 
-    <section class="panel matrix-panel" aria-label="Progressive Decision Matrix">
-      <div class="panel-header">
-        <h2 class="panel-title"><span class="icon">🔀</span> Decision Matrix</h2>
-        <div class="panel-header-actions">
-          <button type="button" class="btn btn-sm" id="resetMatrixBtn">Reset</button>
-          <span class="kbd-badge">M</span>
-        </div>
-      </div>
-      <div class="panel-body">
-        <div id="matrixStatusContainer" class="matrix-status-indicator"></div>
-        <form id="matrixFormContainer" onsubmit="return false;"></form>
-      </div>
-    </section>
+    <!-- BOTTOM ROW: 2 Columns -->
+    <div class="grid-bottom-row">
 
-    <section class="panel action-card-column" aria-label="First Line Action Card">
-      <div class="panel-header">
-        <h2 class="panel-title"><span class="icon">📋</span> First Line Action Card</h2>
-        <span class="kbd-badge">Authority</span>
-      </div>
-      <div class="panel-body" id="actionCardContainer"></div>
-    </section>
+      <!-- Bottom Left: Layer D — GDS Live Runbook Step-Through -->
+      <section class="panel runbook-panel" aria-label="Layer D: GDS Live Runbook">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <span class="panel-icon">💻</span>
+            <h2 class="panel-title">GDS Live Runbook (Step-Through)</h2>
+          </div>
+          <div class="panel-header-badges">
+            <span class="shortcut-tip">n: Next · p: Prev · Space: Done · g: Select</span>
+          </div>
+        </div>
+
+        <div class="panel-body runbook-body" id="runbookContainer"></div>
+      </section>
+
+      <!-- Bottom Right: Layer D — Multi-PNR Mini Tracker -->
+      <section class="panel multi-pnr-panel-wrap" aria-label="Multi-PNR Tracker">
+        <div class="panel-body multi-pnr-body" id="multiPnrTrackerContainer"></div>
+      </section>
+
+    </div>
 
   </main>
 
-  <footer class="bottom-status-bar">
-    <div class="buffer-preview">
-      <span class="buffer-label">Active Buffer:</span>
-      <span class="buffer-text" id="currentBufferText">No snippet copied yet</span>
-    </div>
-    <button type="button" class="btn btn-sm btn-primary" id="quickCopyBufferBtn"><span>📋 Copy Again</span></button>
-  </footer>
+  <!-- Modals & Overlays -->
 
-  <div class="modal-overlay" id="variableModal">
+  <!-- Booking Context Modal -->
+  <div class="modal-overlay" id="contextModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3 class="modal-title" id="varModalTitle">Fill Variables</h3>
-        <button type="button" class="modal-close-btn" id="varModalClose">&times;</button>
+        <h3 class="modal-title">📇 Booking Context (Auto-interpolates Cues & Commands)</h3>
+        <button type="button" class="modal-close-btn" id="contextModalClose">&times;</button>
       </div>
-      <form id="varModalForm">
-        <div class="modal-body">
-          <div style="font-size: 0.8rem; color: var(--text-secondary);">Customize values before copy:</div>
-          <div id="varInputsContainer" style="display: flex; flex-direction: column; gap: 12px;"></div>
-          <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
-            <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Live Preview:</label>
-            <div class="template-preview-box" id="varPreviewText"></div>
+      <form id="contextForm" oninput="updateContext()" onsubmit="return false;">
+        <div class="modal-body context-grid-form">
+          <div class="form-group">
+            <label for="ctxBrand">Brand / Partner</label>
+            <select id="ctxBrand">
+              <option value="ETG">ETG (Gotogate, Mytrip...)</option>
+              <option value="BCOM">Booking.com (NO ETG Fee / NO Penalty)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="ctxPnr">PNR Locator</label>
+            <input type="text" id="ctxPnr" value="HT89KL" placeholder="HT89KL" maxlength="8" autocomplete="off" />
+          </div>
+          <div class="form-group">
+            <label for="ctxAirline">Airline Code</label>
+            <input type="text" id="ctxAirline" value="VN" placeholder="VN" maxlength="3" autocomplete="off" />
+          </div>
+          <div class="form-group">
+            <label for="ctxPaxCount">Pax Count (ADT)</label>
+            <input type="number" id="ctxPaxCount" value="2" min="1" max="9" />
+          </div>
+          <div class="form-group">
+            <label for="ctxLastName">Customer Last Name</label>
+            <input type="text" id="ctxLastName" value="NGUYEN" placeholder="NGUYEN" autocomplete="off" />
+          </div>
+          <div class="form-group">
+            <label for="ctxNewDate">New Flight Date</label>
+            <input type="text" id="ctxNewDate" value="25OCT" placeholder="25OCT" autocomplete="off" />
+          </div>
+          <div class="form-group">
+            <label for="ctxAmount">Quoted Amount (EUR)</label>
+            <input type="text" id="ctxAmount" value="185.00" placeholder="185.00" autocomplete="off" />
+          </div>
+          <div class="context-toggles-row">
+            <label class="toggle-pill"><input type="checkbox" id="ctxHasChild" /> Child present</label>
+            <label class="toggle-pill"><input type="checkbox" id="ctxHasInfant" /> Infant present</label>
+            <label class="toggle-pill warn"><input type="checkbox" id="ctxPartialPax" checked /> Partial Pax / Split required</label>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn" id="varCancelBtn">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="varSubmitBtn"><span>📋 Copy</span></button>
+          <button type="button" class="btn btn-primary" id="contextModalDone">Apply Context</button>
         </div>
       </form>
     </div>
   </div>
 
+  <!-- Pre-close QA Checklist Modal -->
   <div class="modal-overlay" id="qaModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3 class="modal-title">🛡️ CEP Pre-Close QA</h3>
+        <h3 class="modal-title">🛡️ CEP Pre-Close QA Checklist (8-Point Scorecard)</h3>
         <button type="button" class="modal-close-btn" id="qaModalClose">&times;</button>
       </div>
       <div class="modal-body">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Scorecard:</span>
-          <span id="qaProgressText" style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-emerald);">0/8</span>
+        <div class="qa-score-header">
+          <span>Completed Steps:</span>
+          <span id="qaProgressText" class="qa-score-count">0/8</span>
         </div>
         <div class="qa-progress-bar"><div class="qa-progress-fill" id="qaProgressFill"></div></div>
-        <div class="qa-checklist-group" id="qaListContainer" style="margin-top: 12px;"></div>
+        <div class="qa-checklist-group" id="qaListContainer"></div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-danger" id="qaResetBtn">Reset</button>
+        <button type="button" class="btn btn-danger" id="qaResetBtn">Reset All</button>
         <button type="button" class="btn btn-primary" id="qaDoneBtn">Done</button>
       </div>
     </div>
   </div>
 
+  <!-- SOP & Rule Pack Manager Modal -->
   <div class="modal-overlay" id="sopManagerModal">
-    <div class="modal-card" style="max-width: 800px; height: 80vh;">
+    <div class="modal-card modal-lg">
       <div class="modal-header">
-        <h3 class="modal-title">⚙️ SOP & Rule Pack</h3>
+        <h3 class="modal-title">⚙️ SOP Rules & Data Pack (Notion Sync)</h3>
         <button type="button" class="modal-close-btn" id="sopModalClose">&times;</button>
       </div>
       <div class="modal-body">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="sop-tabs-bar">
           <div class="filter-tabs">
-            <button type="button" class="filter-tab active" id="sopTabPaths">Paths</button>
-            <button type="button" class="filter-tab" id="sopTabSnippets">Snippets</button>
+            <button type="button" class="filter-tab active" id="sopTabPaths">Paths (Decision Matrix)</button>
+            <button type="button" class="filter-tab" id="sopTabSnippets">Snippets (Script Cues)</button>
+            <button type="button" class="filter-tab" id="sopTabRunbooks">Runbooks (GDS Steps)</button>
           </div>
         </div>
-        <textarea id="sopJsonEditor" style="width: 100%; height: 320px; background: var(--bg-primary); color: #38bdf8; font-family: var(--font-mono); font-size: 0.8rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px; resize: none;"></textarea>
-        <div style="display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
-          <div style="display: flex; gap: 8px;">
-            <button type="button" class="btn btn-sm" id="exportSopBtn">📥 Export</button>
-            <label class="btn btn-sm" style="cursor: pointer;">📤 Import
+        <textarea id="sopJsonEditor" class="sop-editor" spellcheck="false"></textarea>
+        <div class="sop-actions-row">
+          <div class="export-import-group">
+            <button type="button" class="btn btn-sm" id="exportSopBtn">📥 Export JSON Backup</button>
+            <label class="btn btn-sm btn-file-import">📤 Import JSON
               <input type="file" id="importSopFileInput" accept=".json" style="display: none;" />
             </label>
           </div>
-          <button type="button" class="btn btn-sm btn-danger" id="resetSopDefaultsBtn">↺ Reset defaults</button>
+          <button type="button" class="btn btn-sm btn-danger" id="resetSopDefaultsBtn">↺ Reset Notion Defaults</button>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" id="saveSopJsonBtn">Save & Apply</button>
+        <button type="button" class="btn btn-primary" id="saveSopJsonBtn">Save & Apply Changes</button>
       </div>
     </div>
   </div>
 
-  <div class="modal-overlay" id="cheatSheetModal">
-    <div class="modal-card" style="max-width: 800px; height: 80vh;">
-      <div class="modal-header">
-        <h3 class="modal-title">💡 Amadeus — Commands & Workflow</h3>
-        <button type="button" class="modal-close-btn" id="cheatSheetModalClose">&times;</button>
-      </div>
-      <div class="modal-body" style="overflow-y: auto;">
-        <div class="filter-tabs" style="margin-bottom: 12px;">
-          <button type="button" class="filter-tab active" id="tabCommands" onclick="switchAmadeusTab('commands')">Auto-fill commands</button>
-          <button type="button" class="filter-tab" id="tabWorkflow" onclick="switchAmadeusTab('workflow')">Rebook checklist</button>
-        </div>
-        <div id="amadeusCommandsContent">
-          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">Fill Booking Context first — click a command to copy.</p>
-          <div class="qa-checklist-group" id="dynamicCommandsList" style="display: flex; flex-direction: column; gap: 8px;"></div>
-        </div>
-        <div id="amadeusWorkflowContent" style="display: none;">
-          <h4 style="margin-top:0;">📋 Rebooking checklist</h4>
-          <ol style="font-size: 0.9rem; line-height: 1.55; color: var(--text-primary); padding-left: 1.2rem;">
-            <li><strong>Open PNR:</strong> <code id="wf_rt">RT</code></li>
-            <li><strong>Coupon status:</strong> <code>TWD/L…</code> must be <strong>O</strong> (or A). If partial pax → <strong>split first</strong>.</li>
-            <li><strong>ATC first:</strong> <code>FXQ</code> then <code>FXO</code> if needed. If ATC fails → manual fare rules only; do not invent a refund total.</li>
-            <li><strong>Fees:</strong> Read TOTAL ADD COLL. <span style="color: var(--accent-emerald);">B.com = no ETG fee / no airline penalty quote path.</span> Flex ticket → deduct change fee manually.</li>
-            <li><strong>Never guarantee exact refund amount</strong> — only fees known + “may be eligible”.</li>
-            <li><strong>Pay link →</strong> clean PNR (<code>XE</code>) → <code>ER</code> → Fulfillment.</li>
-          </ol>
-        </div>
-      </div>
-    </div>
-  </div>
-
+  <!-- Toast Notification Container -->
   <div class="toast-container" id="toastContainer"></div>
+
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

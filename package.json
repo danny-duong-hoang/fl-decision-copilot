@@ -1,7 +1,8 @@
 {
   "name": "fl-decision-copilot",
-  "version": "1.0.0",
-  "description": "FL Decision Copilot V1 (Chat + CXL) Prototype for First Line Agents",
+  "version": "2.11.0",
+  "type": "module",
+  "description": "FL Decision Copilot Voice V2.11 (Voice + GDS) for First Line Agents",
   "main": "index.html",
   "scripts": {
     "dev": "vite",

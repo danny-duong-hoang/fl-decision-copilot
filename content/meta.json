@@ -1,0 +1,66 @@
+{
+  "content_version": "Voice V2.11",
+  "data_source": "Notion FL Decision Copilot Hub",
+  "last_updated": "2026-09-03",
+  "modify_order_reasons": {
+    "Void": "Still within the void window, full cancel — automation voids ticket + EMD and removes segment (full cancel only)",
+    "24h airline rule": "Within the airline's 24h window per Edvin Documents — not always a full refund, check calculator",
+    "24H BR Cancellation": "Brazil law — full refund with no handling fee even if airline does not allow 24h, provided departure is >=7 days after purchase",
+    "Ticket rules - airline fee": "Voluntary cancellation per fare rules + penalty",
+    "Ticket rules - taxes": "Tax-only refund — split first if only some passengers",
+    "Failed Flex Rebooking": "Flex rebooking could not be fulfilled — refund penalty/air amount already collected",
+    "Force majeure - refund": "FM eligible — usually no ETG service fee",
+    "NACO": "Claim old ticket value to keep as ETG credit toward new ticket — no payout to customer"
+  },
+  "coupon_status_actions": {
+    "A - Airport Control": "May still be reissuable — proceed cautiously with Manual pricing, verify with Edvin first",
+    "C - Checked in": "Ask the airline (YY) to open the ticket before reissue is possible",
+    "E - Exchanged": "Check whether a new ticket already exists for this passenger before doing anything else",
+    "F - Flown/Used": "No reissue possible on this coupon",
+    "L - Lifted/Boarded": "No reissue possible on this coupon",
+    "S - Suspended": "Possible to ask the airline (YY) to open the ticket for reissue via Support queue",
+    "U - Unknown segment": "Possible to ask the airline (YY) to open the ticket for reissue",
+    "V - Voided": "Ticket already voided — proceed with New Ticket Sell instead of rebooking",
+    "O - Open": "Ready for rebooking/refund via ATC or Manual"
+  },
+  "sabre_commands_quickref": {
+    "*PNR / *T / *P7": "Retrieve PNR / ticket-EMD list",
+    "WETR*[line] or WETR*T[ticket]": "Open ticket, read STAT (coupon status) and BAG",
+    "*S": "Check current PCC",
+    "AAA[PCC]": "Switch to a different PCC (must match ticket-issuing office for WFRF)",
+    "WFRFTR[line]¥A[YY]¥N[pax].1¥S[segments]": "ATC reissue/reprice + create TST (add ¥NCB, ¥BR[fare family], etc.)",
+    "WFRTR[line]¥A[YY]¥N[pax].1¥S[segments]": "Manual reprice for partially-used ticket (1 pax per run)",
+    "WPS[segments]": "Manual price selected segments (add ¥PCNN/¥PINF, ¥NCB, ¥B[fare family])",
+    "MD": "Read old tax breakdown on ticket",
+    "*PQ / *PQS / PQD / PQDALL": "Check / view all / delete stored fare quote(s)",
+    "RD[line]*PE or RD[line]*16": "Read penalty rule (Category 16)",
+    "FQ[issue date][city pair][departure date]-[airline]": "Retrieve fare/fare rules for manual pricing",
+    "X1 / X1-2 / XI": "Cancel line / range / whole itinerary",
+    "WV[ticket line]": "Void ticket",
+    "*XXXX-[locator]-P": "Retrieve purged PNR (locator is 6 characters)",
+    "*H7 / *HT / *HIA": "Ticket history / air-segment history",
+    "WFRA[ticket]/REF or WFRATR[line]/REF": "Confirm Automated Refund (voluntary, Sabre-issued ticket only)"
+  },
+  "service_fee_rules": {
+    "standard_voluntary_rebooking": "40 EUR/pax (or local currency equivalent)",
+    "standard_voluntary_cancellation": "40 EUR/pax",
+    "schedule_change_second_alt": "15 EUR/pax (Basic tier only; free for B.com/Platinum/Business)",
+    "post_departure_refund_noshow": "65 EUR/pax",
+    "waived_conditions": [
+      "Booking.com orders (all requests)",
+      "Platinum Service Package orders",
+      "Business Class orders",
+      "Involuntary Schedule Change (1st alternative)",
+      "Force Majeure (FM) rebooking/cancellation",
+      "GDPR-Waiver cancellations",
+      "Infants (INF) without seat"
+    ],
+    "multi_pnr_rule": "Charge service fee once per person/order — NEVER once per PNR. Charge the highest applicable fee if mixed."
+  },
+  "open_questions_notes": [
+    "SC Trivial: Automation may not auto-process trivial under 30m; FL can manually accept TK->HK if customer agrees.",
+    "LCC/Portal ancillary <48h: strictly refer to airline airport desk.",
+    "Partially used Sabre syntax: WFRTR[line]¥A[YY]¥N[pax].1¥S[seg] (1 pax per run).",
+    "Sabre partial EMD: Sabre lacks coupon selection for EMD; use BSP Refund Application (RA) or escalate to Refunds."
+  ]
+}
