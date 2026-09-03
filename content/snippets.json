@@ -207,5 +207,115 @@
     "vars": [],
     "channel": ["voice"],
     "last_verified": "2026-08-30"
+  },
+  {
+    "id": "naco_ack_voice",
+    "triggers": ["@nacoack", "naco ack", "typo"],
+    "title": "Acknowledge NACO / Typo Request",
+    "cep_step": "acknowledgement",
+    "paths": ["gds_naco_eligibility_gate", "name_correction_naco"],
+    "text": "I understand — you need a name correction on the ticket because one letter is missing, and you want this fixed before travel. Let me check the airline policy on your booking right now so I can tell you exactly what is possible.",
+    "vars": [],
+    "channel": ["voice"],
+    "last_verified": "2026-09-03"
+  },
+  {
+    "id": "naco_spell_name_voice",
+    "triggers": ["@spell", "spell name", "passport name"],
+    "title": "Spell Correct Passport Name",
+    "cep_step": "probing",
+    "paths": ["gds_naco_eligibility_gate"],
+    "text": "To avoid any further mismatch, could you spell the full surname and first name exactly as they appear on the passport? I will read it back to you.",
+    "vars": [],
+    "channel": ["voice"],
+    "last_verified": "2026-09-03"
+  },
+  {
+    "id": "naco_not_permitted_voice",
+    "triggers": ["@naconope", "naco not permitted", "name blocked"],
+    "title": "NACO Not Permitted by Policy",
+    "cep_step": "solution",
+    "paths": ["gds_naco_codeshare_or_not_permitted"],
+    "text": "Thank you for waiting. I have checked the airline policy on your booking in our system. For this ticket, name correction is not permitted, so I am not able to change the name on the existing ticket from our side.",
+    "vars": [],
+    "channel": ["voice"],
+    "last_verified": "2026-09-03"
+  },
+  {
+    "id": "naco_codeshare_explain_voice",
+    "triggers": ["@codeshare", "naco codeshare", "multi airline"],
+    "title": "Codeshare / Multi-Airline Technical Limit",
+    "cep_step": "solution",
+    "paths": ["gds_naco_codeshare_or_not_permitted"],
+    "text": "This booking involves more than one airline operating the journey, and on this type of ticket the airline policy does not allow a name correction because of system limitations between the carriers. That is why the change cannot be processed on the existing ticket.",
+    "vars": [],
+    "channel": ["voice"],
+    "last_verified": "2026-09-03"
+  },
+  {
+    "id": "naco_alt_void_or_cxl_voice",
+    "triggers": ["@nacoalt", "naco alternatives", "void new ticket"],
+    "title": "Alternatives After NACO Block",
+    "cep_step": "solution",
+    "paths": ["gds_naco_codeshare_or_not_permitted"],
+    "text": "What I can do is check the options that are still within policy: if the ticket is still inside the void window, we may cancel and create a new ticket with the correct name — I will confirm cost first. If void is not available, I can check a voluntary cancellation per the fare rules, or leave the booking unchanged. I cannot authorize travel with a name that does not match the documents.",
+    "vars": [],
+    "channel": ["voice"],
+    "last_verified": "2026-09-03"
+  },
+  {
+    "id": "naco_yy_said_exception_voice",
+    "triggers": ["@yyexception", "airline promised", "yy exception"],
+    "title": "Customer Claims Airline Promised Exception",
+    "cep_step": "solution",
+    "paths": ["gds_naco_customer_claims_yy_exception"],
+    "text": "I hear you — the airline told you they could do it if we contact them. I will not ignore that. What I must do is send this to our Support team, who are authorized to contact the airline, verify that exception in writing, and come back with the exact next step. I cannot cold-call the airline myself from this line.",
+    "vars": [],
+    "channel": ["voice"],
+    "last_verified": "2026-09-03"
+  },
+  {
+    "id": "naco_support_will_contact_yy_voice",
+    "triggers": ["@nacosupport", "support yy", "escalate support"],
+    "title": "Support Contacts Airline (No Charge Yet)",
+    "cep_step": "agreement",
+    "paths": ["gds_naco_customer_claims_yy_exception"],
+    "text": "I will escalate this to Support now so they can contact the airline on the booking. There is no charge for a name correction until Support confirms the airline actually allows us to proceed. You will be updated on the registered email once we have the airline's confirmation.",
+    "vars": [],
+    "channel": ["voice"],
+    "last_verified": "2026-09-03"
+  },
+  {
+    "id": "naco_no_live_manager_voice",
+    "triggers": ["@nomanager", "no live manager", "manager transfer"],
+    "title": "No Live Senior Manager Transfer",
+    "cep_step": "solution",
+    "paths": ["gds_naco_supervisor_callback"],
+    "text": "I understand you want a manager. I cannot bring a senior manager onto this live call — that warm transfer is not available. What I can do is escalate you to our Supervisor callback queue so a supervisor contacts you about this case.",
+    "vars": [],
+    "channel": ["voice"],
+    "last_verified": "2026-09-03"
+  },
+  {
+    "id": "naco_supervisor_callback_voice",
+    "triggers": ["@supcb", "supervisor callback", "request supervisor"],
+    "title": "Offer Supervisor Callback",
+    "cep_step": "agreement",
+    "paths": ["gds_naco_supervisor_callback"],
+    "text": "If you would like a supervisor to review this, I will place a supervisor callback request now. Please confirm the best number to reach you, and I will include a clear summary of the name correction, the airline policy on file, and what the airline told you.",
+    "vars": [],
+    "channel": ["voice"],
+    "last_verified": "2026-09-03"
+  },
+  {
+    "id": "naco_quote_voice",
+    "triggers": ["@nacoquote", "naco quote", "name change price"],
+    "title": "NACO Permitted — Quote Price",
+    "cep_step": "solution",
+    "paths": ["gds_naco_permitted_standard_flow"],
+    "text": "Name correction is allowed on this booking. The airline fee is {currency} {airline_fee}, and our service fee is {currency} {service_fee}. After payment we will send it for ticket reissue. Shall I proceed?",
+    "vars": ["currency", "airline_fee", "service_fee"],
+    "channel": ["voice"],
+    "last_verified": "2026-09-03"
   }
 ]

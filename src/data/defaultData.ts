@@ -9,9 +9,10 @@ export const DEFAULT_SNIPPETS: Snippet[] = defaultSnippetsRaw as Snippet[];
 export const DEFAULT_RUNBOOKS: Runbook[] = defaultRunbooksRaw as Runbook[];
 export const DEFAULT_META: MetaConfig = defaultMetaRaw as MetaConfig;
 
-const STORAGE_KEY_PATHS = 'fl_copilot_paths_v2';
-const STORAGE_KEY_SNIPPETS = 'fl_copilot_snippets_v2';
-const STORAGE_KEY_RUNBOOKS = 'fl_copilot_runbooks_v2';
+const STORAGE_KEY_PATHS = 'fl_copilot_paths_v2_12';
+const STORAGE_KEY_SNIPPETS = 'fl_copilot_snippets_v2_12';
+const STORAGE_KEY_RUNBOOKS = 'fl_copilot_runbooks_v2_12';
+const STORAGE_KEY_VERSION = 'fl_copilot_version';
 
 export class DataStore {
   private paths: DecisionPath[] = [];
@@ -24,6 +25,15 @@ export class DataStore {
   }
 
   public load(): void {
+    const currentVersion = localStorage.getItem(STORAGE_KEY_VERSION);
+    if (currentVersion !== DEFAULT_META.content_version) {
+      // Content version bump to V2.12: auto re-seed defaults with Section 18
+      localStorage.removeItem(STORAGE_KEY_PATHS);
+      localStorage.removeItem(STORAGE_KEY_SNIPPETS);
+      localStorage.removeItem(STORAGE_KEY_RUNBOOKS);
+      localStorage.setItem(STORAGE_KEY_VERSION, DEFAULT_META.content_version);
+    }
+
     const savedPaths = localStorage.getItem(STORAGE_KEY_PATHS);
     const savedSnippets = localStorage.getItem(STORAGE_KEY_SNIPPETS);
     const savedRunbooks = localStorage.getItem(STORAGE_KEY_RUNBOOKS);

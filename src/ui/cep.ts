@@ -109,10 +109,10 @@ export class CepManager {
       const isCompleted = this.completedSteps.has(idx);
 
       stepEl.className = `stepper-step ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`;
-      stepEl.setAttribute('title', `${step.label} (${idx + 1}): ${step.desc}`);
+      stepEl.setAttribute('title', `${idx + 1}. ${step.label} — ${step.desc}`);
+      stepEl.setAttribute('aria-label', `${step.label}: ${step.desc}`);
       stepEl.innerHTML = `
         <span class="step-num">${isCompleted ? '✓' : idx + 1}</span>
-        <span class="step-label">${step.label}</span>
       `;
 
       stepEl.addEventListener('click', () => {

@@ -41,6 +41,7 @@ export class GdsRunbookEngine {
     if (!this.activeRunbook) return;
     if (this.currentStepIndex < this.activeRunbook.steps.length - 1) {
       this.completedSteps.add(this.currentStepIndex);
+      this.checkSplitCompletion();
       this.currentStepIndex++;
       this.render();
     }
@@ -59,8 +60,16 @@ export class GdsRunbookEngine {
       this.completedSteps.delete(this.currentStepIndex);
     } else {
       this.completedSteps.add(this.currentStepIndex);
+      this.checkSplitCompletion();
     }
     this.render();
+  }
+
+  private checkSplitCompletion(): void {
+    if (!this.activeRunbook) return;
+    if (this.currentStepIndex === 0 && (this.activeRunbook.id.includes('split') || this.activeRunbook.id.includes('partial_pax'))) {
+      window.dispatchEvent(new CustomEvent('fl-split-step-done'));
+    }
   }
 
   private bindGlobalKeyboard(): void {

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FL Decision Copilot — Voice V2.11</title>
+  <title>FL Decision Copilot — Voice V2.12</title>
   <meta name="description" content="Personal FL Voice copilot beside Genesys, Edvin & GDS: keep CEP scorecard, decide the right path fast, speak short cues naturally, and follow GDS steps without freezing mid-call.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,7 +17,7 @@
       <div class="login-header">
         <div class="login-icon">🧭</div>
         <h2 class="login-title">FL Decision Copilot</h2>
-        <p class="login-subtitle">Voice V2.11 · First Line Authority Assistant</p>
+        <p class="login-subtitle">Voice V2.12 · First Line Authority Assistant</p>
       </div>
       <div class="login-alert-error" id="loginErrorMsg" style="display: none;"></div>
       <form id="loginForm" class="login-form">
@@ -59,7 +59,7 @@
         <span class="brand-icon">🧭</span>
         <div class="brand-titles">
           <h1 class="brand-title">FL Decision Copilot</h1>
-          <span class="brand-subtitle">Voice V2.11 · data from Notion</span>
+          <span class="brand-subtitle">Voice V2.12 · data from Notion</span>
         </div>
       </div>
       <div class="voice-badge">
@@ -89,6 +89,12 @@
       <button class="btn btn-qa" id="openQaModalBtn" title="Pre-Close QA Scorecard (8 steps)">
         <span>🛡️ Pre-Close QA</span>
         <span class="kbd-badge" id="qaBadgeCount">0/8</span>
+      </button>
+
+      <!-- Density Toggle Button -->
+      <button class="btn btn-secondary" id="densityToggleBtn" title="Toggle Comfort (15.5px) / Compact (13.5px) density">
+        <span>🎛️</span>
+        <span id="densityModeText">Comfort</span>
       </button>
 
       <!-- Quick Context Toggle -->
@@ -179,7 +185,7 @@
     </div>
 
     <!-- BOTTOM ROW: 2 Columns -->
-    <div class="grid-bottom-row">
+    <div class="grid-bottom-row focus-mode-active">
 
       <!-- Bottom Left: Layer D — GDS Live Runbook Step-Through -->
       <section class="panel runbook-panel" aria-label="Layer D: GDS Live Runbook">
@@ -189,6 +195,10 @@
             <h2 class="panel-title">GDS Live Runbook (Step-Through)</h2>
           </div>
           <div class="panel-header-badges">
+            <button type="button" class="btn btn-sm btn-pnr-toggle-chip" id="pnrRunbookHeaderToggle" title="Toggle Multi-PNR Tracker">
+              <span>📑 PNR Tracker</span>
+              <span class="pnr-count-badge" id="pnrRunbookCountBadge">2</span>
+            </button>
             <span class="shortcut-tip">n: Next · p: Prev · Space: Done · g: Select</span>
           </div>
         </div>
@@ -197,7 +207,7 @@
       </section>
 
       <!-- Bottom Right: Layer D — Multi-PNR Mini Tracker -->
-      <section class="panel multi-pnr-panel-wrap" aria-label="Multi-PNR Tracker">
+      <section class="panel multi-pnr-panel-wrap collapsed-panel" id="multiPnrPanelWrap" aria-label="Multi-PNR Tracker">
         <div class="panel-body multi-pnr-body" id="multiPnrTrackerContainer"></div>
       </section>
 

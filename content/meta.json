@@ -1,6 +1,6 @@
 {
-  "content_version": "Voice V2.11",
-  "data_source": "Notion FL Decision Copilot Hub",
+  "content_version": "Voice V2.12",
+  "data_source": "Notion FL Decision Copilot Hub (Sections 1-18b)",
   "last_updated": "2026-09-03",
   "modify_order_reasons": {
     "Void": "Still within the void window, full cancel — automation voids ticket + EMD and removes segment (full cancel only)",

@@ -1194,5 +1194,152 @@
     "source": "1. Applicable ETG service fees (Multi-PNR Orders and Service Fee)",
     "last_verified": "2026-09-01",
     "needs_shelf_check": false
+  },
+  {
+    "id": "gds_naco_eligibility_gate",
+    "title": "GDS NACO: Eligibility Gate & Order Checks",
+    "when": [
+      "Request = Name Change",
+      "Type = <=3 chars or marriage (NACO)",
+      "Phone interaction",
+      "Before promising outcome or fee"
+    ],
+    "fl_steps": [
+      "Hold briefly and open Edvin Documents for validating carrier NAME / NACO policy — never rely on memory or what customer says YY told them",
+      "Clarify exact passenger + correct name as on passport/ID; on phone ask customer to spell letter-by-letter",
+      "Run order gates first: chargeback -> stop; active SC -> handle SC first; FM/Travel Alert -> handle FM first; coupon must be O or A else use coupon-status branch",
+      "Time-to-departure gate: if departure within 24h (own-office/ID ticket) or 72h (consolidator ticket), refer customer to airline unless Edvin explicitly requires us to attempt",
+      "Check Void window next (GDS/Portals): if still void-eligible, prefer Void + new ticket sell with correct name when policy/system allows — cleaner than blocked NACO on codeshare",
+      "Classify: NACO = same person minor fix (typo/middle name/marriage spelling); NACH = transfer to different person entirely — airline definition may differ, Edvin wins",
+      "Booking.com / Business class / Platinum: no ETG service fee on request itself — still check airline penalty separately",
+      "BR market (Gotogate/Mytrip/Flightnetwork/Booking.com BR): always escalate to Support to contact airline for written authorization per ANAC art.8 before any correction"
+    ],
+    "snippets": ["gds_hold_lookup", "naco_ack_voice", "naco_spell_name_voice"],
+    "alternatives": ["Void and rebook if within window"],
+    "forbidden": [
+      "Do not promise NACO is possible before Edvin policy is checked",
+      "Do not let customer dictate process based only on what YY said on their side call",
+      "Do not charge any name-change fee before path is confirmed"
+    ],
+    "handoff": "None (gate only)",
+    "source": "2. Name correction/change - General process; 1. General information about NACO/NACH; 3. Name correction/change within the Void period",
+    "last_verified": "2026-09-03",
+    "needs_shelf_check": false
+  },
+  {
+    "id": "gds_naco_codeshare_or_not_permitted",
+    "title": "GDS NACO: Codeshare Block / Not Permitted by Policy",
+    "when": [
+      "Request = Name Change",
+      "Edvin Documents state name correction/change is not permitted",
+      "OR multi-airline / codeshare ticket where Edvin/Shelf indicates NACO/NACH is not possible"
+    ],
+    "fl_steps": [
+      "State boundary calmly and specifically: per airline policy recorded in documents for validating carrier, name correction is not permitted (codeshare technical limitation is common)",
+      "Do NOT call airline yourself from FL to 'double-check if they can travel with typo' — helpdesk will not guarantee travel with name error",
+      "Do NOT invent a live transfer to 'senior manager' — path does not exist as warm handoff; if customer asks for supervisor, use Supervisor callback path",
+      "Offer lawful alternatives only: (1) if inside Void — Void + new ticket with correct name ($0 ETG fee on Booking.com); (2) voluntary cancellation per fare rules; (3) keep ticket as-is with honesty that we cannot authorize travel with mismatched name",
+      "Register Zendesk/errand action 'Not permitted' (Silent child ticket) when outcome is policy block with information only",
+      "If customer claims airline promised exception or said 'Booking.com only needs to contact YY', switch immediately to gds_naco_customer_claims_yy_exception"
+    ],
+    "snippets": ["naco_not_permitted_voice", "naco_codeshare_explain_voice", "naco_alt_void_or_cxl_voice"],
+    "alternatives": [
+      "Void + new ticket sell if void still open",
+      "Voluntary cancellation per fare rules",
+      "Supervisor callback queue if customer demands supervisor"
+    ],
+    "forbidden": [
+      "Do not contact YY yourself as FL when Docs already say not permitted and contact is not authorized",
+      "Do not promise that Booking.com will force airline to change codeshare name",
+      "Do not warm-transfer to senior management / TL as a live call — not allowed",
+      "Do not guarantee passenger can fly with spelling error"
+    ],
+    "handoff": "None for pure Not permitted; Support only if customer claims YY exception; Supervisor callback queue if requested",
+    "source": "2. Name correction/change - General process (Airline Policy Check — codeshare note + not permitted)",
+    "last_verified": "2026-09-03",
+    "needs_shelf_check": false
+  },
+  {
+    "id": "gds_naco_customer_claims_yy_exception",
+    "title": "GDS NACO: Customer Claims Airline Promised Exception",
+    "when": [
+      "Request = Name Change",
+      "Customer says airline already promised a fix / exception",
+      "OR customer says YY told them agency/Booking.com only needs to contact airline"
+    ],
+    "fl_steps": [
+      "Acknowledge mismatch without attacking airline: hear that airline gave different message; our side must verify in writing through authorized channel",
+      "Explain FL boundary in one sentence: First Line cannot cold-call airline on this; Support is the team that contacts airline for verification and instructions",
+      "Escalate to Support per Escalations to Support guidelines — adjust handling deadline manually if departure is tight",
+      "Never charge ETG service fee, airline NACO fee, or name-change cost until Support confirms it is possible",
+      "For Booking.com orders still state no ETG service fee if/when chargeable path confirmed",
+      "Set expectation: Support will verify with airline and update customer via registered email; not refusing help — using only auditable channel",
+      "Errand action: 'Sent to Support' (Active child ticket)"
+    ],
+    "snippets": ["naco_yy_said_exception_voice", "naco_support_will_contact_yy_voice"],
+    "alternatives": ["Supervisor callback queue if customer rejects Support path and insists on manager"],
+    "forbidden": [
+      "Do not charge any fee before Support confirms possibility",
+      "Do not tell customer you will personally call YY if FL is not authorized",
+      "Do not dismiss customer's YY conversation as a lie — verify via Support"
+    ],
+    "handoff": "Support (contact airline for verification/instructions)",
+    "source": "2. Name correction/change - General process -> Other Scenarios and Handling -> Exception by Airline",
+    "last_verified": "2026-09-03",
+    "needs_shelf_check": false
+  },
+  {
+    "id": "gds_naco_supervisor_callback",
+    "title": "GDS NACO: Supervisor Callback Queue (De-escalation)",
+    "when": [
+      "Customer demands supervisor / manager / senior management on NACO/NACH or any phone interaction",
+      "Warm transfer to senior management is not allowed"
+    ],
+    "fl_steps": [
+      "Stay steady: do not argue hierarchy; do not pretend live senior manager join is available if policy forbids it",
+      "Explain real path: escalate to Supervisor callback queue so supervisor contacts them — authorized escalation, not live barge-in",
+      "Capture callback number, registered email, order ID, and 2-line case summary (policy block / codeshare / customer claims YY exception / fees discussed)",
+      "Complete escalation per site process into Supervisor call-back queue",
+      "Errand action: 'Customer requested Supervisor - Escalated' (Active child ticket)",
+      "If underlying issue is still 'YY promised exception', also keep/send Support path in parallel — supervisor callback for de-escalation, Support for airline verification"
+    ],
+    "snippets": ["naco_supervisor_callback_voice", "naco_no_live_manager_voice"],
+    "alternatives": [],
+    "forbidden": [
+      "Do not invent a live transfer to TL/senior management when not permitted",
+      "Do not hang up without offering authorized supervisor callback path when customer demands supervisor"
+    ],
+    "handoff": "Supervisor call-back queue",
+    "source": "2. Name correction/change - General process (Errand Paths — Customer requested Supervisor)",
+    "last_verified": "2026-09-03",
+    "needs_shelf_check": true
+  },
+  {
+    "id": "gds_naco_permitted_standard_flow",
+    "title": "GDS NACO: Permitted Standard Reissue Flow",
+    "when": [
+      "Request = Name Change",
+      "Edvin policy permits change (or case-to-case authorized by Support)",
+      "Not a pure codeshare block"
+    ],
+    "fl_steps": [
+      "Confirm docs/authorization needs from Edvin; if docs/YY authorization required -> collect passport via Etrack/ZD public reply and/or escalate Support before charging airline fee",
+      "Quote airline penalty (if any) + ETG service fee if applicable (skip ETG fee on Booking.com / Business / Platinum)",
+      "Phone: email verification gate before charge/process on issued-ticket voluntary NACO; prefer MOTO, else PL <=48h",
+      "Name confirmation on phone if no docs: Blank template or PL text with Surname: X / First Name: Y; customer confirms during call",
+      "Effective 02 Mar 2026: GDS/Farelogix NACO/NACH and related EMD fee issuance go via Rebooking Wizard -> Rebooking Queue (Type of change Manual / New Ticket / EMD)",
+      "Warn EMD ancillaries may disconnect and need repurchase; ETG products tied to old PNR may not carry over if new PNR created",
+      "Zendesk handoff Fulfillment + Resolved when sent to ticketing"
+    ],
+    "snippets": ["naco_quote_voice", "gds_hold_lookup"],
+    "alternatives": ["Void path if still in void and cleaner"],
+    "forbidden": [
+      "Do not finalize GDS NACO outside Rebooking Wizard when Mar 2026 rule applies",
+      "Do not skip email verification on phone for issued-ticket voluntary NACO"
+    ],
+    "handoff": "Fulfillment/Ticketing via Rebooking Wizard (GDS/Farelogix); Support when auth/docs required",
+    "source": "2. Name correction/change - General process; Edvin Rebooking Wizard Name Change/Correction",
+    "last_verified": "2026-09-03",
+    "needs_shelf_check": false
   }
 ]

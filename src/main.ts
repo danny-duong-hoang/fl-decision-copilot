@@ -110,6 +110,37 @@ class App {
       });
     }
 
+    // Density Mode Handling (Default: Comfort)
+    const densityBtn = document.getElementById('densityToggleBtn');
+    const densityText = document.getElementById('densityModeText');
+    const applyDensity = (mode: string) => {
+      document.documentElement.setAttribute('data-density', mode);
+      localStorage.setItem('fl_density_mode', mode);
+      if (densityText) {
+        densityText.textContent = mode === 'compact' ? 'Compact' : 'Comfort';
+      }
+    };
+    const storedDensity = localStorage.getItem('fl_density_mode') || 'comfort';
+    applyDensity(storedDensity);
+
+    if (densityBtn) {
+      densityBtn.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-density') || 'comfort';
+        const next = current === 'compact' ? 'comfort' : 'compact';
+        applyDensity(next);
+        this.showToast(`Switched density to ${next === 'compact' ? 'Compact' : 'Comfort (Default)'}`);
+      });
+    }
+
+    // Multi-PNR Header Toggle Chip in Runbook Panel
+    const pnrHeaderToggle = document.getElementById('pnrRunbookHeaderToggle');
+    if (pnrHeaderToggle) {
+      pnrHeaderToggle.addEventListener('click', () => {
+        this.multiPnrTracker.toggle();
+        this.showToast(this.multiPnrTracker.isCollapsed ? 'Call Focus Mode: Runbook full-width' : 'Multi-PNR Tracker expanded');
+      });
+    }
+
     this.isInitialized = true;
     window.updateContext();
   }
@@ -148,6 +179,11 @@ class App {
           e.preventDefault();
           const sel = document.getElementById('runbookSelectDropdown') as HTMLSelectElement | null;
           sel?.focus();
+        }
+        // Shortcut t / T : Toggle Multi-PNR Tracker (Call Focus mode)
+        else if (e.key === 't' || e.key === 'T') {
+          e.preventDefault();
+          this.multiPnrTracker?.toggle();
         }
         // Shortcuts 1-8 : CEP Steps
         else if (e.key >= '1' && e.key <= '8') {

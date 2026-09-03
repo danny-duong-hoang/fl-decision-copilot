@@ -1,9 +1,24 @@
+/* ==========================================================================
+   FL Decision Copilot — Voice V2.12
+   Density Modes: Default "Comfort" (15.5px) & "Compact" (13.5px)
+   ========================================================================== */
+
 :root {
+  /* Density Tokens: Comfort Mode (Default) */
+  font-size: 15.5px;
+  --gap-panel: 18px;
+  --padding-panel: 16px 18px;
+  --font-title-step: 1.35rem;
+  --font-title-card: 1.15rem;
+  --font-cue-speak: 1.22rem;
+  --font-terminal-cmd: 1.35rem;
+
+  /* Theme Palette */
   --bg-primary: #0a0d14;
   --bg-secondary: #101522;
-  --bg-card: rgba(16, 22, 36, 0.92);
-  --bg-card-hover: rgba(26, 35, 56, 0.95);
-  --bg-input: #1a2236;
+  --bg-card: rgba(16, 22, 36, 0.94);
+  --bg-card-hover: rgba(26, 35, 56, 0.96);
+  --bg-input: #172033;
   --border-color: rgba(255, 255, 255, 0.1);
   --border-focus: #38bdf8;
   --text-primary: #f8fafc;
@@ -23,12 +38,23 @@
 
   --radius-sm: 6px;
   --radius-md: 10px;
-  --radius-lg: 16px;
+  --radius-lg: 14px;
   --radius-full: 9999px;
 
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
-  --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Optional "Compact" Mode for Power Users */
+[data-density="compact"] {
+  font-size: 13.5px;
+  --gap-panel: 10px;
+  --padding-panel: 10px 12px;
+  --font-title-step: 1.15rem;
+  --font-title-card: 1.0rem;
+  --font-cue-speak: 1.05rem;
+  --font-terminal-cmd: 1.15rem;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -38,11 +64,12 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
+  min-width: 1280px; /* Desktop floor standard */
   display: flex;
   flex-direction: column;
   background-image:
-    radial-gradient(circle at 10% 10%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 90% 90%, rgba(16, 185, 129, 0.08) 0%, transparent 40%);
+    radial-gradient(circle at 12% 12%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 88% 88%, rgba(16, 185, 129, 0.08) 0%, transparent 40%);
   background-attachment: fixed;
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
@@ -50,42 +77,42 @@ body {
 }
 
 /* ==========================================================================
-   Header Bar
+   Header Bar (Reduced Padding, Clean & Concise)
    ========================================================================== */
 .app-header {
   background: var(--bg-card);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border-color);
-  padding: 8px 20px;
+  padding: 6px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: relative;
   z-index: 50;
-  gap: 16px;
+  gap: 12px;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 .brand-section {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .brand-icon {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 17px;
   box-shadow: var(--shadow-glow);
 }
 
@@ -95,16 +122,16 @@ body {
 }
 
 .brand-title {
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  background: linear-gradient(90deg, #ffffff, #94a3b8);
+  background: linear-gradient(90deg, #ffffff, #cbd5e1);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .brand-subtitle {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   color: var(--text-muted);
   font-weight: 500;
 }
@@ -112,15 +139,15 @@ body {
 .voice-badge {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   background: rgba(16, 185, 129, 0.12);
   color: var(--accent-emerald);
   border: 1px solid rgba(16, 185, 129, 0.3);
-  padding: 3px 8px;
+  padding: 2px 7px;
   border-radius: var(--radius-full);
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
 }
 
 .voice-pulse-dot {
@@ -141,78 +168,66 @@ body {
   flex: 1;
   display: flex;
   justify-content: center;
-  max-width: 780px;
+  max-width: 520px;
 }
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 /* ==========================================================================
-   CEP 8-Step Stepper in Header
+   CEP 8-Step Stepper (Numbers 1-8 Only, Full Tooltip on Hover)
    ========================================================================== */
 .stepper-container {
   display: flex;
   align-items: center;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.4);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-full);
-  padding: 4px 8px;
-  gap: 4px;
+  padding: 3px 8px;
+  gap: 5px;
 }
 
 .stepper-step {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 9px;
-  border-radius: var(--radius-full);
-  border: none;
-  background: transparent;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.05);
   color: var(--text-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.78rem;
+  font-weight: 700;
   font-family: inherit;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: var(--transition);
-  white-space: nowrap;
 }
 
 .stepper-step:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.15);
   color: var(--text-primary);
 }
 
 .stepper-step.active {
   background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
   color: white;
-  box-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+  transform: scale(1.08);
 }
 
 .stepper-step.completed {
+  background: rgba(16, 185, 129, 0.15);
   color: var(--accent-emerald);
-}
-
-.stepper-step.completed .step-num {
-  background: rgba(16, 185, 129, 0.2);
-  color: var(--accent-emerald);
-}
-
-.stepper-step .step-num {
-  width: 17px;
-  height: 17px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.65rem;
+  border-color: rgba(16, 185, 129, 0.4);
 }
 
 .step-connector {
-  width: 8px;
+  width: 6px;
   height: 2px;
   background: rgba(255, 255, 255, 0.15);
 }
@@ -222,7 +237,7 @@ body {
 }
 
 /* ==========================================================================
-   Hold Timer Chip (Soft 10-min reminder)
+   Hold Timer Chip
    ========================================================================== */
 .hold-timer-chip {
   display: flex;
@@ -231,7 +246,7 @@ body {
   background: var(--bg-input);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 4px 8px;
+  padding: 3px 8px;
   font-size: 0.8rem;
 }
 
@@ -264,7 +279,7 @@ body {
   border: none;
   color: var(--text-primary);
   font-size: 0.72rem;
-  padding: 3px 6px;
+  padding: 2px 6px;
   border-radius: var(--radius-sm);
   cursor: pointer;
 }
@@ -279,9 +294,9 @@ body {
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  font-size: 0.8rem;
+  gap: 5px;
+  padding: 5px 11px;
+  font-size: 0.78rem;
   font-weight: 600;
   font-family: inherit;
   border-radius: var(--radius-md);
@@ -324,7 +339,20 @@ body {
 .btn-qa {
   background: rgba(16, 185, 129, 0.15);
   color: var(--accent-emerald);
-  border-color: rgba(16, 185, 129, 0.3);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.btn-pnr-toggle-chip {
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  font-weight: 700;
+}
+
+.btn-pnr-toggle-chip.active {
+  background: rgba(56, 189, 248, 0.25);
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
 }
 
 .kbd-badge {
@@ -338,14 +366,14 @@ body {
 }
 
 /* ==========================================================================
-   Main Desktop Grid (4 Layers)
+   Main Desktop Layout (Comfort Mode Default)
    ========================================================================== */
 .main-desktop-grid {
   flex: 1;
   padding: 12px 18px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--gap-panel);
   max-width: 1920px;
   margin: 0 auto;
   width: 100%;
@@ -354,18 +382,28 @@ body {
 .grid-top-row {
   display: grid;
   grid-template-columns: 32% 34% 34%;
-  gap: 12px;
+  gap: var(--gap-panel);
   min-height: 480px;
 }
 
+/* Bottom Row: Call Focus Mode Default (Full Width Runbook) */
 .grid-bottom-row {
   display: grid;
   grid-template-columns: 52% 48%;
-  gap: 12px;
+  gap: var(--gap-panel);
   min-height: 380px;
+  transition: all 0.25s ease;
 }
 
-/* Panel wrapper */
+.grid-bottom-row.focus-mode-active {
+  grid-template-columns: 1fr;
+}
+
+.multi-pnr-panel-wrap.collapsed-panel {
+  display: none !important;
+}
+
+/* Panel Containers */
 .panel {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -396,13 +434,13 @@ body {
 }
 
 .panel-title {
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .panel-body {
-  padding: 12px;
+  padding: var(--padding-panel);
   flex: 1;
   overflow-y: auto;
 }
@@ -440,18 +478,18 @@ body {
 .search-icon {
   position: absolute;
   left: 10px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-muted);
 }
 
 .search-input-wrapper input {
   width: 100%;
-  padding: 7px 32px 7px 30px;
+  padding: 8px 32px 8px 32px;
   background: var(--bg-input);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   color: var(--text-primary);
-  font-size: 0.85rem;
+  font-size: 0.86rem;
   outline: none;
 }
 
@@ -503,12 +541,12 @@ body {
   overflow-y: auto;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.35);
   padding: 4px;
 }
 
 .snippet-item {
-  padding: 5px 8px;
+  padding: 6px 8px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: var(--transition);
@@ -526,13 +564,13 @@ body {
 
 .snippet-trigger-badge {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   color: #38bdf8;
   font-weight: 700;
 }
 
 .snippet-title {
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 600;
   color: var(--text-primary);
   flex: 1;
@@ -548,19 +586,12 @@ body {
 }
 
 .snippet-preview-text {
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   color: var(--text-secondary);
-  line-height: 1.3;
+  line-height: 1.35;
 }
 
-.empty-suggestions {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  padding: 8px;
-  text-align: center;
-}
-
-/* Speak Cue Card (Large glanceable readable text) */
+/* Speak Cue Card (Glanceable 18-22px font) */
 .speak-cue-card {
   margin-top: 6px;
   background: rgba(16, 26, 46, 0.95);
@@ -596,7 +627,7 @@ body {
 
 .cue-trigger-label {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   color: #38bdf8;
 }
 
@@ -606,7 +637,7 @@ body {
 }
 
 .speak-cue-title {
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: #ffffff;
 }
@@ -619,7 +650,7 @@ body {
 }
 
 .speak-prompt-label {
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   color: #38bdf8;
@@ -627,7 +658,7 @@ body {
 }
 
 .speak-cue-text {
-  font-size: 1.15rem; /* 18-20px high legibility */
+  font-size: var(--font-cue-speak);
   line-height: 1.5;
   color: #f1f5f9;
   font-weight: 500;
@@ -660,10 +691,6 @@ body {
   background: #047857;
 }
 
-.btn-copy {
-  background: var(--bg-input);
-}
-
 /* ==========================================================================
    Layer B: Decision Matrix & Action Card
    ========================================================================== */
@@ -674,7 +701,7 @@ body {
   padding: 4px 8px;
   background: rgba(0, 0, 0, 0.25);
   border-radius: var(--radius-sm);
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   margin-bottom: 8px;
 }
 
@@ -691,7 +718,7 @@ body {
 .matrix-fields-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 10px;
 }
 
 .form-group {
@@ -701,7 +728,7 @@ body {
 }
 
 .form-group label {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-secondary);
 }
@@ -711,7 +738,7 @@ body {
   border: 1px solid var(--border-color);
   color: var(--text-primary);
   font-family: inherit;
-  font-size: 0.8rem;
+  font-size: 0.84rem;
   padding: 6px 8px;
   border-radius: var(--radius-md);
   outline: none;
@@ -730,7 +757,7 @@ body {
 }
 
 .path-match-label {
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   font-weight: 700;
   color: #38bdf8;
 }
@@ -745,7 +772,7 @@ body {
 .action-card-content {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .card-top-meta {
@@ -762,13 +789,13 @@ body {
 
 .path-badge-id {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   color: #38bdf8;
   font-weight: 700;
 }
 
 .path-authority-tag {
-  font-size: 0.65rem;
+  font-size: 0.68rem;
   font-weight: 800;
   background: rgba(16, 185, 129, 0.2);
   color: var(--accent-emerald);
@@ -783,7 +810,7 @@ body {
 }
 
 .badge-shelf-warn {
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 700;
   background: rgba(245, 158, 11, 0.2);
   color: var(--accent-amber);
@@ -793,41 +820,41 @@ body {
 }
 
 .badge-verified {
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 600;
   color: var(--accent-emerald);
 }
 
 .badge-date {
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
 }
 
 .card-path-title {
-  font-size: 1.05rem;
+  font-size: var(--font-title-card);
   font-weight: 700;
   color: #ffffff;
-  line-height: 1.3;
+  line-height: 1.35;
 }
 
 .alert-box {
   display: flex;
   gap: 8px;
-  padding: 8px 12px;
+  padding: 10px 14px;
   border-radius: var(--radius-md);
-  font-size: 0.78rem;
-  line-height: 1.4;
+  font-size: 0.82rem;
+  line-height: 1.45;
 }
 
 .alert-warning {
   background: rgba(245, 158, 11, 0.12);
-  border: 1px solid rgba(245, 158, 11, 0.35);
+  border: 1px solid rgba(245, 158, 11, 0.4);
   color: #fbbf24;
 }
 
 .alert-info {
   background: rgba(6, 182, 212, 0.12);
-  border: 1px solid rgba(6, 182, 212, 0.35);
+  border: 1px solid rgba(6, 182, 212, 0.4);
   color: #38bdf8;
 }
 
@@ -838,7 +865,7 @@ body {
 }
 
 .section-title {
-  font-size: 0.76rem;
+  font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   color: var(--text-secondary);
@@ -859,15 +886,15 @@ body {
   gap: 8px;
   align-items: flex-start;
   background: rgba(255, 255, 255, 0.02);
-  padding: 6px 8px;
+  padding: 8px 10px;
   border-radius: var(--radius-sm);
   border-left: 3px solid var(--accent-blue);
-  font-size: 0.8rem;
-  line-height: 1.4;
+  font-size: 0.84rem;
+  line-height: 1.45;
 }
 
 .step-badge {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #38bdf8;
 }
@@ -876,16 +903,16 @@ body {
   font-family: var(--font-mono);
   color: #38bdf8;
   background: rgba(56, 189, 248, 0.12);
-  padding: 1px 4px;
+  padding: 1px 5px;
   border-radius: 3px;
 }
 
 /* Forbidden alerts (red/amber) */
 .forbidden-section {
   background: rgba(244, 63, 94, 0.08);
-  border: 1px solid rgba(244, 63, 94, 0.3);
+  border: 1px solid rgba(244, 63, 94, 0.35);
   border-radius: var(--radius-md);
-  padding: 8px 12px;
+  padding: 10px 14px;
 }
 
 .text-danger {
@@ -896,15 +923,15 @@ body {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
 }
 
 .forbidden-item {
   position: relative;
-  padding-left: 16px;
-  font-size: 0.78rem;
+  padding-left: 18px;
+  font-size: 0.82rem;
   color: #fda4af;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .forbidden-item::before {
@@ -935,7 +962,7 @@ body {
 }
 
 .alt-item {
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   color: var(--text-secondary);
   padding-left: 12px;
   position: relative;
@@ -951,10 +978,10 @@ body {
 .card-footer-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  padding-top: 6px;
+  gap: 10px;
+  padding-top: 8px;
   border-top: 1px solid var(--border-color);
-  font-size: 0.72rem;
+  font-size: 0.76rem;
 }
 
 .handoff-box, .source-box {
@@ -985,30 +1012,16 @@ body {
   width: 100%;
   justify-content: center;
   padding: 8px;
-  font-size: 0.85rem;
-}
-
-.empty-action-card {
-  padding: 30px 20px;
-  text-align: center;
-  color: var(--text-muted);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-.empty-icon {
-  font-size: 32px;
+  font-size: 0.88rem;
 }
 
 /* ==========================================================================
-   Layer D: GDS Live Runbook
+   Layer D: GDS Live Runbook (Step title ≥1.25rem, Huge Monospace)
    ========================================================================== */
 .runbook-layout {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .runbook-top-bar {
@@ -1034,7 +1047,7 @@ body {
   border: 1px solid rgba(56, 189, 248, 0.4);
   font-weight: 700;
   color: #38bdf8;
-  max-width: 480px;
+  max-width: 520px;
 }
 
 .runbook-badges-group {
@@ -1044,7 +1057,7 @@ body {
 }
 
 .gds-system-badge {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   padding: 2px 8px;
   border-radius: var(--radius-sm);
@@ -1065,7 +1078,7 @@ body {
 }
 
 .wizard-badge {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 2px 8px;
   border-radius: var(--radius-sm);
@@ -1092,13 +1105,13 @@ body {
 }
 
 .branch-chips-label {
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 700;
   color: var(--text-muted);
 }
 
 .branch-chip {
-  font-size: 0.7rem;
+  font-size: 0.74rem;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-color);
   padding: 2px 8px;
@@ -1107,21 +1120,21 @@ body {
   white-space: nowrap;
 }
 
-/* Active Step Card (HUGE Text, Glanceable in <1s) */
+/* Active Step Card */
 .active-step-card {
-  background: rgba(14, 20, 34, 0.9);
-  border: 1px solid rgba(56, 189, 248, 0.3);
+  background: rgba(14, 20, 34, 0.92);
+  border: 1px solid rgba(56, 189, 248, 0.35);
   border-radius: var(--radius-md);
-  padding: 14px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 .active-step-card.step-completed-card {
   border-color: rgba(16, 185, 129, 0.4);
-  background: rgba(14, 28, 22, 0.9);
+  background: rgba(14, 28, 22, 0.92);
 }
 
 .step-meta-row {
@@ -1138,19 +1151,19 @@ body {
 
 .counter-num {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: #38bdf8;
 }
 
 .status-active-tag {
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--accent-cyan);
 }
 
 .status-done-tag {
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--accent-emerald);
 }
@@ -1160,16 +1173,18 @@ body {
   gap: 6px;
 }
 
+/* Active Step Title ≥ 1.25rem */
 .active-step-title {
-  font-size: 1.1rem;
+  font-size: var(--font-title-step);
   font-weight: 700;
   color: #ffffff;
+  line-height: 1.35;
 }
 
 .active-step-desc {
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   color: var(--text-secondary);
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 /* HUGE Monospace Command Terminal */
@@ -1183,16 +1198,16 @@ body {
 .cmd-box-header {
   display: flex;
   justify-content: space-between;
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--text-muted);
 }
 
 .cmd-terminal-box {
-  background: #050811;
-  border: 1px solid rgba(56, 189, 248, 0.4);
+  background: #040711;
+  border: 1px solid rgba(56, 189, 248, 0.45);
   border-radius: var(--radius-md);
-  padding: 14px 16px;
+  padding: 14px 18px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1202,12 +1217,12 @@ body {
 
 .cmd-terminal-box:hover {
   border-color: #38bdf8;
-  box-shadow: 0 0 16px rgba(56, 189, 248, 0.3);
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.35);
 }
 
 .cmd-terminal-box code {
   font-family: var(--font-mono);
-  font-size: 1.25rem; /* Huge readable 20-22px font */
+  font-size: var(--font-terminal-cmd);
   font-weight: 700;
   color: #38bdf8;
   letter-spacing: 0.04em;
@@ -1227,9 +1242,9 @@ body {
   background: rgba(56, 189, 248, 0.2);
   color: #38bdf8;
   border: 1px solid rgba(56, 189, 248, 0.4);
-  padding: 4px 10px;
+  padding: 5px 12px;
   border-radius: var(--radius-sm);
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
 }
@@ -1239,10 +1254,11 @@ body {
   gap: 8px;
   background: rgba(245, 158, 11, 0.08);
   border-left: 3px solid var(--accent-amber);
-  padding: 8px 12px;
+  padding: 10px 14px;
   border-radius: var(--radius-sm);
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   color: #fde68a;
+  line-height: 1.4;
 }
 
 .steps-progress-row {
@@ -1261,7 +1277,7 @@ body {
   padding: 4px 8px;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
 }
 
@@ -1277,12 +1293,12 @@ body {
 }
 
 /* ==========================================================================
-   Layer D: Multi-PNR Tracker Table
+   Layer D: Multi-PNR Tracker Table (No Truncation, Horizontal Scroll)
    ========================================================================== */
 .multi-pnr-panel {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   height: 100%;
 }
 
@@ -1301,16 +1317,16 @@ body {
 }
 
 .multi-pnr-title {
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   font-weight: 700;
 }
 
 .pnr-count-badge {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: #38bdf8;
   background: rgba(56, 189, 248, 0.15);
-  padding: 2px 6px;
+  padding: 2px 7px;
   border-radius: var(--radius-full);
 }
 
@@ -1320,19 +1336,19 @@ body {
 }
 
 .multi-pnr-rule-reminder {
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   color: #fde68a;
   background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.25);
-  padding: 6px 10px;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 8px 12px;
   border-radius: var(--radius-md);
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
 .multi-pnr-rule-reminder code {
   font-family: var(--font-mono);
   background: rgba(0, 0, 0, 0.3);
-  padding: 1px 4px;
+  padding: 1px 5px;
   border-radius: 3px;
   color: #38bdf8;
 }
@@ -1340,60 +1356,75 @@ body {
 .table-responsive {
   overflow-x: auto;
   flex: 1;
+  width: 100%;
 }
 
 .multi-pnr-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.76rem;
+  font-size: 0.84rem; /* Comfort text size, no shrinking */
+  white-space: nowrap;
 }
 
 .multi-pnr-table th {
   text-align: left;
-  padding: 6px 6px;
+  padding: 8px 8px;
   color: var(--text-muted);
   font-weight: 600;
   border-bottom: 1px solid var(--border-color);
-  white-space: nowrap;
-  font-size: 0.7rem;
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .multi-pnr-table td {
-  padding: 5px 4px;
+  padding: 6px 6px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
+/* Explicit min-widths to prevent any text truncation */
 .pnr-cell-input {
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 3px 5px;
-  font-size: 0.74rem;
+  padding: 5px 7px;
+  font-size: 0.82rem;
   color: var(--text-primary);
   border-radius: var(--radius-sm);
+  outline: none;
+}
+
+.pnr-cell-input:focus {
+  border-color: var(--border-focus);
 }
 
 .pnr-loc {
   font-family: var(--font-mono);
   font-weight: 700;
   color: #38bdf8;
-  width: 82px;
+  width: 90px;
+  min-width: 90px;
 }
 
 .pnr-cell-select {
-  background: #131b2e;
+  background: #141c2e;
   border: 1px solid rgba(255, 255, 255, 0.14);
-  padding: 3px 4px;
-  font-size: 0.72rem;
+  padding: 5px 6px;
+  font-size: 0.8rem;
   color: var(--text-primary);
   border-radius: var(--radius-sm);
   cursor: pointer;
+  outline: none;
 }
 
-.pnr-system { width: 88px; }
-.pnr-req { width: 82px; }
-.pnr-status { width: 92px; font-weight: 600; }
-.pnr-pax { width: 120px; }
-.pnr-notes { width: 100%; min-width: 140px; }
+.pnr-cell-select:focus {
+  border-color: var(--border-focus);
+}
+
+.pnr-system { width: 105px; min-width: 105px; }
+.pnr-pax { width: 140px; min-width: 140px; }
+.pnr-req { width: 100px; min-width: 100px; }
+.pnr-status { width: 110px; min-width: 110px; font-weight: 600; }
+.pnr-notes { width: 100%; min-width: 250px; }
 
 .status-tag-pending { color: var(--accent-amber); }
 .status-tag-quoted { color: #38bdf8; }
@@ -1405,7 +1436,7 @@ body {
   background: transparent;
   border: none;
   color: var(--accent-rose);
-  font-size: 16px;
+  font-size: 18px;
   cursor: pointer;
   padding: 2px 6px;
 }
@@ -1496,7 +1527,7 @@ body {
   gap: 8px;
 }
 
-/* Login Overlay Styles */
+/* Login Card */
 .login-header {
   flex-direction: column;
   text-align: center;
@@ -1583,12 +1614,12 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 10px;
+  padding: 8px 10px;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
 }
 
 .qa-item-row.checked {

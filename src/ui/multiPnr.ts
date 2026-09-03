@@ -4,6 +4,7 @@ export class MultiPnrTracker {
   private rows: MultiPnrRow[] = [];
   private container!: HTMLElement;
   private onRowChangeCallback?: (rows: MultiPnrRow[]) => void;
+  public isCollapsed: boolean = true; // Call Focus mode: collapsed on login
 
   constructor(onRowChange?: (rows: MultiPnrRow[]) => void) {
     this.onRowChangeCallback = onRowChange;
@@ -34,6 +35,49 @@ export class MultiPnrTracker {
 
   public init(): void {
     this.render();
+    this.updateCollapseState();
+    window.addEventListener('fl-split-step-done', () => {
+      this.expand();
+    });
+  }
+
+  public toggle(): void {
+    if (this.isCollapsed) {
+      this.expand();
+    } else {
+      this.collapse();
+    }
+  }
+
+  public expand(): void {
+    this.isCollapsed = false;
+    this.updateCollapseState();
+  }
+
+  public collapse(): void {
+    this.isCollapsed = true;
+    this.updateCollapseState();
+  }
+
+  public updateCollapseState(): void {
+    const bottomRow = document.querySelector('.grid-bottom-row');
+    const panelWrap = document.getElementById('multiPnrPanelWrap');
+    const toggleChip = document.getElementById('pnrRunbookHeaderToggle');
+    const countBadge = document.getElementById('pnrRunbookCountBadge');
+
+    if (countBadge) {
+      countBadge.textContent = `${this.rows.length}`;
+    }
+
+    if (this.isCollapsed) {
+      bottomRow?.classList.add('focus-mode-active');
+      panelWrap?.classList.add('collapsed-panel');
+      if (toggleChip) toggleChip.classList.remove('active');
+    } else {
+      bottomRow?.classList.remove('focus-mode-active');
+      panelWrap?.classList.remove('collapsed-panel');
+      if (toggleChip) toggleChip.classList.add('active');
+    }
   }
 
   public getRows(): MultiPnrRow[] {
@@ -102,6 +146,9 @@ export class MultiPnrTracker {
             </button>
             <button type="button" class="btn btn-sm" id="btnAddLccCombo" title="Add connecting LCC PNR">
               <span>+ LCC Leg</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-secondary" id="btnCollapsePnrTracker" title="Collapse to Call Focus Mode">
+              <span>✕ Minimize</span>
             </button>
           </div>
         </div>
@@ -181,9 +228,11 @@ export class MultiPnrTracker {
   private bindEvents(): void {
     const addBtn = this.container.querySelector('#btnAddPnrRow');
     const addLccBtn = this.container.querySelector('#btnAddLccCombo');
+    const collapseBtn = this.container.querySelector('#btnCollapsePnrTracker');
 
     if (addBtn) addBtn.addEventListener('click', () => this.addRow());
     if (addLccBtn) addLccBtn.addEventListener('click', () => this.addLccCombo());
+    if (collapseBtn) collapseBtn.addEventListener('click', () => this.collapse());
 
     this.container.querySelectorAll('tbody tr').forEach(tr => {
       const rowId = tr.getAttribute('data-row-id');
